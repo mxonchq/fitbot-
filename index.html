@@ -250,10 +250,12 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
 
 /* DESKTOP */
 @media(min-width:768px){
-  #app{max-width:420px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.15)}
-  body{display:flex;align-items:center;justify-content:center;background:#e8e7e2}
-  #app.fs{max-width:100%;box-shadow:none}
-  #app.fs body{background:var(--bg)}
+  body{background:var(--bg)}
+  #app{max-width:680px;margin:0 auto}
+  .sgrid{grid-template-columns:repeat(4,1fr)}
+  .mcrow{grid-template-columns:repeat(3,1fr)}
+  .fgrid{grid-template-columns:repeat(3,1fr)}
+  .wgrid{grid-template-columns:repeat(6,1fr)}
 }
 </style>
 </head>
@@ -444,7 +446,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
 // ═══════════════════════════════════════
 const USDA_KEY = 'ifeGCxmZB0jEsnxd1QLicRvO92NeL8Xg6AumX2Vi';
 const tg = window.Telegram?.WebApp;
-if(tg){tg.ready();tg.expand()}
+if(tg){tg.ready();tg.expand();try{tg.requestFullscreen()}catch(e){}}
+const RU_EN={'курица':'chicken','куриная грудка':'chicken breast','говядина':'beef','свинина':'pork','индейка':'turkey','рыба':'fish','лосось':'salmon','тунец':'tuna','яйцо':'egg','яйца':'eggs','молоко':'milk','творог':'cottage cheese','йогурт':'yogurt','кефир':'kefir','сыр':'cheese','масло':'butter','сметана':'sour cream','гречка':'buckwheat','рис':'rice','овсянка':'oatmeal','макароны':'pasta','картошка':'potato','картофель':'potato','хлеб':'bread','тортилья':'tortilla','помидор':'tomato','огурец':'cucumber','перец':'pepper','морковь':'carrot','брокколи':'broccoli','лук':'onion','чеснок':'garlic','банан':'banana','яблоко':'apple','апельсин':'orange','клубника':'strawberry','черника':'blueberry','виноград':'grapes','арбуз':'watermelon','протеин':'whey protein','шоколад':'chocolate','печенье':'cookies','пицца':'pizza','бургер':'burger','плов':'pilaf','суп':'soup','салат':'salad','блины':'pancakes','орехи':'nuts','арахис':'peanuts','семечки':'sunflower seeds','авокадо':'avocado','кукуруза':'corn','фасоль':'beans'};
+function translateQuery(q){const l=q.toLowerCase().trim();if(RU_EN[l])return RU_EN[l];for(const[ru,en]of Object.entries(RU_EN)){if(l.includes(ru))return en;}return q;}
 
 const TODAY = new Date().toISOString().slice(0,10);
 const WDAY = (new Date().getDay()+6)%7;
@@ -665,7 +669,7 @@ async function searchUSDA(q){
   res.style.display='block';loc.style.display='none';
   list.innerHTML='<div class="usda-loading">🔍 Ищем в базе USDA...</div>';
   try{
-    const r=await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(q)}&pageSize=10&dataType=SR%20Legacy,Survey%20(FNDDS)&api_key=${USDA_KEY}`);
+    const r=await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(translateQuery(q))}&pageSize=10&dataType=SR%20Legacy,Survey%20(FNDDS)&api_key=${USDA_KEY}`);
     const d=await r.json();
     list.innerHTML='';
     if(!d.foods||!d.foods.length){list.innerHTML='<div class="empty">Ничего не найдено</div>';return}
