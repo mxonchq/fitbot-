@@ -5,231 +5,264 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Physique</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 :root{
-  --bg:#0d0d0d;--bg2:#161616;--bg3:#1e1e1e;--bg4:#252525;
-  --border:#2a2a2a;--border2:#333;
-  --text:#f0f0f0;--text2:#999;--text3:#555;
-  --red:#e8193c;--red2:#ff2d4e;--redbg:rgba(232,25,60,0.1);--redbdr:rgba(232,25,60,0.2);
-  --green:#00c853;--greenbg:rgba(0,200,83,0.1);--greenbdr:rgba(0,200,83,0.25);
-  --blue:#2979ff;--bluebg:rgba(41,121,255,0.1);
-  --yellow:#ffab00;--yellowbg:rgba(255,171,0,0.1);
-  --r:16px;--rsm:12px;--rxs:8px;
-  --f:'Outfit',sans-serif;
+  --bg:#f5f5f0;--bg2:#ffffff;--bg3:#f0efea;--bg4:#e8e7e2;
+  --border:#e2e1dc;--border2:#d5d4cf;
+  --text:#1a1a1a;--text2:#6b6b6b;--text3:#a0a0a0;
+  --red:#e8193c;--red2:#ff2d4e;--redbg:rgba(232,25,60,0.08);--redbdr:rgba(232,25,60,0.2);
+  --green:#00a846;--greenbg:rgba(0,168,70,0.08);--greenbdr:rgba(0,168,70,0.2);
+  --blue:#0066ff;--bluebg:rgba(0,102,255,0.08);
+  --yellow:#f59e0b;--yellowbg:rgba(245,158,11,0.1);
+  --shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04);
+  --shadow2:0 2px 8px rgba(0,0,0,0.08),0 8px 24px rgba(0,0,0,0.06);
+  --r:20px;--rsm:14px;--rxs:10px;
+  --f:'Plus Jakarta Sans',sans-serif;
   --st:env(safe-area-inset-top,0px);
   --sb:env(safe-area-inset-bottom,0px);
 }
 html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100%;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
+/* FULLSCREEN BTN */
+#fsBtn{position:fixed;top:12px;right:12px;z-index:999;width:36px;height:36px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--shadow);display:none}
+#fsBtn svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (min-width:768px){#fsBtn{display:flex}}
+
 /* HEADER */
 .hdr{padding:calc(var(--st) + 14px) 20px 0;background:var(--bg);flex-shrink:0}
 .hdr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
 .hdr-brand{font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
 .hdr-date{font-size:12px;color:var(--text3);font-weight:500}
-.hdr-title{font-size:22px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;margin-bottom:14px}
+.hdr-title{font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1.2;margin-bottom:14px;color:var(--text)}
 
 /* TABS */
-.tabs{display:flex;padding:0 12px 10px;background:var(--bg);flex-shrink:0;gap:4px}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border-radius:10px;cursor:pointer;transition:all 0.2s;color:var(--text3);background:none;border:none;font-family:var(--f)}
+.tabs{display:flex;padding:0 12px 12px;background:var(--bg);flex-shrink:0;gap:4px}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border-radius:12px;cursor:pointer;transition:all .2s;color:var(--text3);background:none;border:none;font-family:var(--f)}
 .tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab span{font-size:10px;font-weight:700;letter-spacing:0.3px}
 .tab.on{color:var(--red);background:var(--redbg)}
 
 /* PAGES */
 .pages{flex:1;overflow:hidden;position:relative}
-.page{position:absolute;inset:0;overflow-y:auto;padding:14px 14px calc(24px + var(--sb));display:none;scrollbar-width:none}
+.page{position:absolute;inset:0;overflow-y:auto;padding:16px 16px calc(24px + var(--sb));display:none;scrollbar-width:none}
 .page::-webkit-scrollbar{display:none}
 .page.on{display:block;animation:fu .22s ease}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* CARDS */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px}
-.cp{padding:14px 16px}
-.ch{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px}
-.clbl{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)}
+.card{background:var(--bg2);border-radius:var(--r);margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
+.cp{padding:16px 18px}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px}
+.clbl{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3)}
 .cact{font-size:12px;font-weight:700;color:var(--red);cursor:pointer}
 
-/* KCAL CARD */
-.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
-.ktop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-.knum{font-size:48px;font-weight:900;letter-spacing:-2px;line-height:1}
-.ksub{font-size:12px;color:var(--text3);margin-top:3px;font-weight:500}
+/* KCAL HERO */
+.kcard{background:var(--text);border-radius:var(--r);padding:20px 20px 18px;margin-bottom:12px;box-shadow:var(--shadow2);position:relative;overflow:hidden}
+.kcard::before{content:'';position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.kcard::after{content:'';position:absolute;left:-20px;bottom:-40px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.03)}
+.ktop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative;z-index:1}
+.knum{font-size:52px;font-weight:900;letter-spacing:-2px;line-height:1;color:white}
+.ksub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px;font-weight:500}
 .kright{text-align:right}
-.kremain{font-size:26px;font-weight:800;letter-spacing:-1px}
-.kremainlbl{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-top:2px;text-transform:uppercase}
-.kbar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-bottom:14px}
+.kremain{font-size:28px;font-weight:800;letter-spacing:-1px;color:white}
+.kremainlbl{font-size:10px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.5px;margin-top:2px;text-transform:uppercase}
+.kbar{height:4px;background:rgba(255,255,255,0.15);border-radius:2px;overflow:hidden;margin-bottom:16px;position:relative;z-index:1}
 .kbarfill{height:100%;border-radius:2px;background:var(--red);transition:width .5s cubic-bezier(.4,0,.2,1)}
-.mcrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.mcbox{background:var(--bg3);border-radius:10px;padding:10px 11px}
-.mcval{font-size:17px;font-weight:800;letter-spacing:-.5px}
-.mclbl{font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.5px;margin-top:1px}
-.mcbar{height:3px;border-radius:2px;margin-top:5px;background:var(--bg4);overflow:hidden}
+.mcrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;position:relative;z-index:1}
+.mcbox{background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 12px;backdrop-filter:blur(10px)}
+.mcval{font-size:17px;font-weight:800;letter-spacing:-.5px;color:white}
+.mclbl{font-size:10px;color:rgba(255,255,255,0.5);font-weight:700;letter-spacing:.5px;margin-top:1px}
+.mcbar{height:3px;border-radius:2px;margin-top:6px;background:rgba(255,255,255,0.15);overflow:hidden}
 .mcfill{height:100%;border-radius:2px;transition:width .5s}
 
 /* STATS */
-.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.scard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px}
-.sico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.scard{background:var(--bg2);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+.sico{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
 .sico svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.snum{font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1}
-.slbl{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px;letter-spacing:.3px}
-.ssub{font-size:11px;font-weight:600;margin-top:3px}
+.snum{font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1;color:var(--text)}
+.slbl{font-size:10px;color:var(--text3);font-weight:600;margin-top:2px}
+.ssub{font-size:11px;font-weight:700;margin-top:4px}
 
 /* TOGGLE */
-.tgcard{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:all .2s;margin-bottom:10px}
-.tgcard.on{background:var(--greenbg);border-color:var(--greenbdr)}
-.tgico{width:38px;height:38px;border-radius:11px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tgico svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tgcard{display:flex;align-items:center;gap:12px;background:var(--bg2);border-radius:var(--r);padding:14px 16px;cursor:pointer;transition:all .2s;margin-bottom:12px;box-shadow:var(--shadow)}
+.tgcard.on{background:var(--greenbg)}
+.tgico{width:40px;height:40px;border-radius:12px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tgico svg{width:18px;height:18px;stroke:var(--text2);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tginfo{flex:1}
-.tgname{font-size:14px;font-weight:700}
+.tgname{font-size:14px;font-weight:700;color:var(--text)}
 .tgsub{font-size:11px;color:var(--text3);margin-top:1px}
-.sw{width:42px;height:23px;border-radius:12px;background:var(--bg4);position:relative;transition:background .2s;flex-shrink:0}
+.sw{width:44px;height:24px;border-radius:12px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0}
 .sw.on{background:var(--green)}
-.sw::after{content:'';position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:50%;background:white;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.sw.on::after{left:22px}
+.sw::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.sw.on::after{left:23px}
 
-/* WATER QUICK */
+/* WATER BTNS */
 .wbtns{display:flex;gap:6px;flex-wrap:wrap}
-.wbtn{flex:1;min-width:55px;padding:9px 6px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--f);font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
-.wbtn:active{background:var(--bluebg);border-color:var(--blue);color:var(--blue)}
+.wbtn{flex:1;min-width:55px;padding:10px 6px;border-radius:10px;background:var(--bluebg);border:none;color:var(--blue);font-family:var(--f);font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.wbtn:active{transform:scale(.95);background:var(--blue);color:white}
 
-/* INPUT */
+/* INPUTS */
 .irow{display:flex;gap:8px}
-.inp{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:var(--f);font-size:14px;outline:none;transition:border-color .2s}
+.inp{flex:1;background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;color:var(--text);font-family:var(--f);font-size:14px;outline:none;transition:border-color .2s}
 .inp:focus{border-color:var(--red)}
 .inp::placeholder{color:var(--text3)}
 
 /* BUTTONS */
-.btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:10px;border:none;cursor:pointer;font-family:var(--f);font-size:14px;font-weight:700;transition:all .15s;width:100%}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:13px;border-radius:12px;border:none;cursor:pointer;font-family:var(--f);font-size:14px;font-weight:700;transition:all .15s;width:100%}
 .btn:active{transform:scale(.97)}
 .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
-.btn-r{background:var(--red);color:white}
-.btn-g{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
-.btn-sm{padding:10px 15px;font-size:13px;width:auto;border-radius:9px}
+.btn-r{background:var(--red);color:white;box-shadow:0 4px 12px rgba(232,25,60,0.3)}
+.btn-g{background:var(--bg3);color:var(--text);border:1.5px solid var(--border)}
+.btn-sm{padding:10px 16px;font-size:13px;width:auto;border-radius:10px}
 
-/* FOOD */
+/* FOOD PAGE */
 .sw-inp{position:relative;margin-bottom:12px}
-.sw-inp svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.srch{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 13px 11px 37px;color:var(--text);font-family:var(--f);font-size:14px;outline:none;transition:border-color .2s}
+.sw-inp svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.srch{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:12px 13px 12px 38px;color:var(--text);font-family:var(--f);font-size:14px;outline:none;transition:border-color .2s;box-shadow:var(--shadow)}
 .srch:focus{border-color:var(--red)}
 .srch::placeholder{color:var(--text3)}
-.sechead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;margin-top:2px}
-.seclbl{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)}
+
+.sechead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.seclbl{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3)}
 .secact{font-size:12px;font-weight:700;color:var(--red);cursor:pointer}
-.cats{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}
+
+.cats{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px}
 .cats::-webkit-scrollbar{display:none}
-.cat{padding:6px 13px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text3);transition:all .15s}
+.cat{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);color:var(--text3);transition:all .15s}
 .cat.on{background:var(--redbg);border-color:var(--redbdr);color:var(--red)}
-.flist{display:flex;flex-direction:column;gap:5px}
-.fitem{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s}
-.fitem:active{background:var(--bg3)}
-.fico{width:36px;height:36px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px}
+
+.flist{display:flex;flex-direction:column;gap:6px}
+.fitem{display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:var(--rsm);padding:11px 14px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow)}
+.fitem:active{transform:scale(.98)}
+.fico{width:38px;height:38px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
 .finfo{flex:1;min-width:0}
-.fname{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fmacro{font-size:11px;color:var(--text3);margin-top:1px}
-.fkcal{font-size:14px;font-weight:800;flex-shrink:0;color:var(--text2)}
-.fadd{width:26px;height:26px;border-radius:7px;background:var(--redbg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.fadd svg{width:13px;height:13px;stroke:var(--red);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
-.litem{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:5px}
-.ldot{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0}
+.fname{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.fmacro{font-size:11px;color:var(--text3);margin-top:2px}
+.fkcal{font-size:15px;font-weight:800;flex-shrink:0;color:var(--text)}
+.fadd{width:28px;height:28px;border-radius:8px;background:var(--redbg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fadd svg{width:14px;height:14px;stroke:var(--red);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* USDA SEARCH RESULTS */
+.usda-loading{text-align:center;padding:20px;color:var(--text3);font-size:13px}
+.usda-item{display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:var(--rsm);padding:11px 14px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow);margin-bottom:6px}
+.usda-item:active{transform:scale(.98)}
+.usda-ico{width:38px;height:38px;border-radius:10px;background:var(--bluebg);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.usda-badge{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--blue);background:var(--bluebg);padding:2px 7px;border-radius:10px;margin-left:6px}
+
+/* LOG */
+.litem{display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:var(--rsm);padding:11px 14px;margin-bottom:6px;box-shadow:var(--shadow)}
+.ldot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0}
 .linfo{flex:1;min-width:0}
-.lname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lsub{font-size:10px;color:var(--text3);margin-top:1px}
-.lkcal{font-size:13px;font-weight:800;flex-shrink:0}
+.lname{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.lsub{font-size:11px;color:var(--text3);margin-top:1px}
+.lkcal{font-size:13px;font-weight:800;flex-shrink:0;color:var(--text)}
 .ldel{padding:5px;cursor:pointer;color:var(--text3)}
 .ldel svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* WORKOUT */
-.wscroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px}
+.wscroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px}
 .wscroll::-webkit-scrollbar{display:none}
-.wday{flex-shrink:0;width:48px;padding:9px 4px;border-radius:11px;background:var(--bg2);border:1px solid var(--border);text-align:center;cursor:pointer;transition:all .2s}
-.wday.active{background:var(--red);border-color:var(--red)}
-.wday.done{background:var(--greenbg);border-color:var(--greenbdr)}
-.wdname{font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase}
-.wdico{font-size:14px;margin-top:3px}
-.wday.active .wdname,.wday.active .wdico-t{color:white}
-.wbanner{background:var(--red);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;position:relative;overflow:hidden}
-.wbanner::before{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.07)}
-.wbtype{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-bottom:3px}
-.wbname{font-size:24px;font-weight:900;letter-spacing:-.5px}
-.wbsub{font-size:12px;opacity:.7;margin-top:3px}
-.exitem{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:12px 13px;margin-bottom:7px;cursor:pointer;transition:all .2s}
-.exitem.done{border-color:var(--greenbdr);background:var(--greenbg)}
-.exnum{width:28px;height:28px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;transition:all .2s}
-.exitem.done .exnum{background:var(--green);color:#000}
+.wday{flex-shrink:0;width:52px;padding:10px 4px;border-radius:14px;background:var(--bg2);box-shadow:var(--shadow);text-align:center;cursor:pointer;transition:all .2s}
+.wday.active{background:var(--text);box-shadow:var(--shadow2)}
+.wday.done{background:var(--greenbg)}
+.wdname{font-size:10px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--text3)}
+.wday.active .wdname{color:rgba(255,255,255,.6)}
+.wdico{font-size:15px;margin-top:4px}
+.wbanner{background:var(--text);border-radius:var(--r);padding:18px 20px;margin-bottom:12px;box-shadow:var(--shadow2);position:relative;overflow:hidden}
+.wbanner::before{content:'';position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.05)}
+.wbtype{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px}
+.wbname{font-size:26px;font-weight:900;letter-spacing:-.5px;color:white}
+.wbsub{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px}
+.exitem{display:flex;align-items:center;gap:12px;background:var(--bg2);border-radius:var(--rsm);padding:13px 14px;margin-bottom:8px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.exitem.done{background:var(--greenbg);box-shadow:none}
+.exnum{width:30px;height:30px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;transition:all .2s;color:var(--text)}
+.exitem.done .exnum{background:var(--green);color:white}
 .exbody{flex:1}
-.exname{font-size:13px;font-weight:700}
-.exsets{font-size:11px;color:var(--text3);margin-top:1px}
-.exck svg{width:18px;height:18px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:all .2s}
+.exname{font-size:13px;font-weight:700;color:var(--text)}
+.exsets{font-size:11px;color:var(--text3);margin-top:2px}
+.exck svg{width:18px;height:18px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .exitem.done .exck svg{stroke:var(--green)}
 
 /* WATER PAGE */
-.whero{text-align:center;padding:20px 0 16px}
-.wbignum{font-size:64px;font-weight:900;letter-spacing:-3px;line-height:1;color:var(--blue)}
+.whero{text-align:center;padding:22px 0 18px}
+.wbignum{font-size:68px;font-weight:900;letter-spacing:-3px;line-height:1;color:var(--blue)}
 .wunit{font-size:14px;color:var(--text3);font-weight:600;margin-top:3px}
-.wpbar{height:5px;background:var(--bg3);border-radius:3px;margin:14px 0 0;overflow:hidden}
+.wpbar{height:6px;background:var(--bg3);border-radius:3px;margin:16px 0 0;overflow:hidden}
 .wpfill{height:100%;border-radius:3px;background:var(--blue);transition:width .5s}
 .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.wtile{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:13px 8px;text-align:center;cursor:pointer;transition:all .15s}
-.wtile:active{background:var(--bluebg);border-color:var(--blue)}
-.wtile svg{width:22px;height:22px;stroke:var(--blue);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:5px}
-.wtval{font-size:15px;font-weight:800}
+.wtile{background:var(--bg3);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:all .15s}
+.wtile:active{background:var(--bluebg);transform:scale(.96)}
+.wtile svg{width:22px;height:22px;stroke:var(--blue);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:6px}
+.wtval{font-size:15px;font-weight:800;color:var(--text)}
 .wtlbl{font-size:10px;color:var(--text3);margin-top:1px}
 
 /* PROGRESS */
-.pgmet{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.pgmet{background:var(--bg2);border-radius:var(--r);padding:16px 18px;margin-bottom:10px;box-shadow:var(--shadow)}
 .pgmhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.pgmlbl{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)}
-.pgbadge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px}
+.pgmlbl{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3)}
+.pgbadge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
 .pgbadge.g{background:var(--greenbg);color:var(--green)}
 .pgbadge.b{background:var(--redbg);color:var(--red)}
 .pgbadge.n{background:var(--bg3);color:var(--text3)}
-.pgnum{font-size:38px;font-weight:900;letter-spacing:-1.5px;line-height:1}
+.pgnum{font-size:40px;font-weight:900;letter-spacing:-1.5px;line-height:1;color:var(--text)}
 .pgunit{font-size:12px;color:var(--text3);margin-top:2px}
-.chart{display:flex;gap:3px;align-items:flex-end;height:40px;margin-top:12px}
+.chart{display:flex;gap:3px;align-items:flex-end;height:44px;margin-top:14px}
 .cb{flex:1;border-radius:3px 3px 0 0;background:var(--bg3);min-height:3px;transition:height .4s}
 .cb.ct{background:var(--red)}
-.cb.cf{background:var(--bg4)}
-.strk{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
-.snum{font-size:44px;font-weight:900;letter-spacing:-2px;color:var(--yellow)}
-.stitle{font-size:14px;font-weight:800}
-.ssb{font-size:11px;color:var(--text3);margin-top:2px}
+.cb.cf{background:var(--border2)}
+.strk{display:flex;align-items:center;gap:14px;background:var(--bg2);border-radius:var(--r);padding:16px 18px;margin-bottom:10px;box-shadow:var(--shadow)}
+.snum{font-size:46px;font-weight:900;letter-spacing:-2px;line-height:1;color:var(--yellow)}
+.stitle{font-size:15px;font-weight:800;color:var(--text)}
+.sstitle{font-size:11px;color:var(--text3);margin-top:2px}
 .strk7{display:flex;gap:4px;margin-bottom:10px}
-.s7d{flex:1;aspect-ratio:1;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--text3)}
-.s7d.don{background:var(--greenbg);color:var(--green);border:1px solid var(--greenbdr)}
-.s7d.tod{border:1px solid var(--red);color:var(--red)}
+.s7d{flex:1;aspect-ratio:1;border-radius:7px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:var(--text3);box-shadow:var(--shadow)}
+.s7d.don{background:var(--greenbg);color:var(--green)}
+.s7d.tod{background:var(--redbg);color:var(--red)}
 
 /* MODAL */
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(6px)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(8px)}
 .ov.open{opacity:1;pointer-events:all}
-.sheet{background:var(--bg2);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + var(--sb));width:100%;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.67,0);max-height:88vh;overflow-y:auto}
+.sheet{background:var(--bg2);border-radius:24px 24px 0 0;padding:20px 20px calc(20px + var(--sb));width:100%;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.67,0);max-height:88vh;overflow-y:auto}
 .ov.open .sheet{transform:translateY(0)}
-.handle{width:30px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 14px}
-.stitle{font-size:18px;font-weight:800;letter-spacing:-.3px;margin-bottom:3px}
-.ssub2{font-size:12px;color:var(--text3);margin-bottom:14px}
-.ptrow{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 12px}
-.pchip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--bg3);border:1px solid var(--border);color:var(--text);cursor:pointer}
+.handle{width:32px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.stitle{font-size:20px;font-weight:800;letter-spacing:-.3px;margin-bottom:3px;color:var(--text)}
+.ssub2{font-size:13px;color:var(--text3);margin-bottom:14px}
+.ptrow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.pchip{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;background:var(--bg3);border:1.5px solid var(--border);color:var(--text);cursor:pointer;transition:all .15s}
 .pchip.sel{background:var(--redbg);border-color:var(--redbdr);color:var(--red)}
-.preview{background:var(--bg3);border-radius:9px;padding:11px 13px;margin:8px 0 12px;font-size:12px;color:var(--text3)}
-.preview b{color:var(--text);font-size:14px}
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
-.fg{display:flex;flex-direction:column;gap:4px}
+.preview{background:var(--bg3);border-radius:12px;padding:12px 14px;margin:8px 0 12px;font-size:13px;color:var(--text3)}
+.preview b{color:var(--text);font-size:15px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
 .fgfull{grid-column:1/-1}
 .fglbl{font-size:10px;font-weight:800;color:var(--text3);letter-spacing:.5px;text-transform:uppercase}
 
 /* TOAST */
-.toast{position:fixed;bottom:calc(70px + var(--sb));left:50%;transform:translateX(-50%) translateY(8px);background:var(--bg2);border:1px solid var(--border2);border-radius:11px;padding:9px 18px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast{position:fixed;bottom:calc(80px + var(--sb));left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:white;border-radius:14px;padding:10px 20px;font-size:13px;font-weight:700;z-index:200;opacity:0;transition:all .25s;white-space:nowrap;pointer-events:none;box-shadow:var(--shadow2)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.empty{text-align:center;padding:22px;color:var(--text3);font-size:13px;font-weight:500}
+.empty{text-align:center;padding:24px;color:var(--text3);font-size:13px;font-weight:600}
+
+/* DESKTOP */
+@media(min-width:768px){
+  #app{max-width:420px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.15)}
+  body{display:flex;align-items:center;justify-content:center;background:#e8e7e2}
+  #app.fs{max-width:100%;box-shadow:none}
+  #app.fs body{background:var(--bg)}
+}
 </style>
 </head>
 <body>
+
+<div id="fsBtn" onclick="toggleFS()" title="Полный экран">
+  <svg id="fsIcon" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+</div>
+
 <div id="app">
 <div class="hdr">
   <div class="hdr-row"><div class="hdr-brand">Physique</div><div class="hdr-date" id="hdate"></div></div>
@@ -263,43 +296,27 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
     </div>
     <div class="kbar"><div class="kbarfill" id="dkb" style="width:0%"></div></div>
     <div class="mcrow">
-      <div class="mcbox"><div class="mcval" id="dp">0<span style="font-size:11px;color:var(--text3)">г</span></div><div class="mclbl">Белок</div><div class="mcbar"><div class="mcfill" id="dpb" style="width:0%;background:#2979ff"></div></div></div>
-      <div class="mcbox"><div class="mcval" id="dc">0<span style="font-size:11px;color:var(--text3)">г</span></div><div class="mclbl">Углеводы</div><div class="mcbar"><div class="mcfill" id="dcb" style="width:0%;background:#ffab00"></div></div></div>
-      <div class="mcbox"><div class="mcval" id="df">0<span style="font-size:11px;color:var(--text3)">г</span></div><div class="mclbl">Жиры</div><div class="mcbar"><div class="mcfill" id="dfb" style="width:0%;background:#ff6d00"></div></div></div>
+      <div class="mcbox"><div class="mcval" id="dp">0г</div><div class="mclbl">Белок</div><div class="mcbar"><div class="mcfill" id="dpb" style="width:0%;background:#60a5fa"></div></div></div>
+      <div class="mcbox"><div class="mcval" id="dc">0г</div><div class="mclbl">Углеводы</div><div class="mcbar"><div class="mcfill" id="dcb" style="width:0%;background:#fbbf24"></div></div></div>
+      <div class="mcbox"><div class="mcval" id="df">0г</div><div class="mclbl">Жиры</div><div class="mcbar"><div class="mcfill" id="dfb" style="width:0%;background:#fb923c"></div></div></div>
     </div>
   </div>
   <div class="sgrid">
-    <div class="scard">
-      <div class="sico" style="background:var(--bluebg);color:var(--blue)"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
-      <div class="snum" id="dwn">0.0</div><div class="slbl">Литров воды</div>
-      <div class="ssub" id="dws" style="color:var(--text3)">цель 3.0 л</div>
-    </div>
-    <div class="scard">
-      <div class="sico" style="background:var(--yellowbg);color:var(--yellow)"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-      <div class="snum" id="dsn">0</div><div class="slbl">Шагов</div>
-      <div class="ssub" id="dss" style="color:var(--text3)">цель 6 000</div>
-    </div>
-    <div class="scard">
-      <div class="sico" style="background:var(--redbg);color:var(--red)"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-      <div class="snum" id="dwgt">—</div><div class="slbl">Кг</div>
-      <div class="ssub" id="dwgts" style="color:var(--text3)">старт 104.3</div>
-    </div>
-    <div class="scard" onclick="go('prog')" style="cursor:pointer">
-      <div class="sico" style="background:var(--yellowbg);color:var(--yellow)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-      <div class="snum" id="dstrk">0</div><div class="slbl">Дней серия</div>
-      <div class="ssub" style="color:var(--yellow)">🔥 стрик</div>
-    </div>
+    <div class="scard"><div class="sico" style="background:var(--bluebg);color:var(--blue)"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div><div class="snum" id="dwn">0.0</div><div class="slbl">Литров воды</div><div class="ssub" id="dws" style="color:var(--text3)">цель 3.0 л</div></div>
+    <div class="scard"><div class="sico" style="background:var(--yellowbg);color:var(--yellow)"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="snum" id="dsn">0</div><div class="slbl">Шагов</div><div class="ssub" id="dss" style="color:var(--text3)">цель 6 000</div></div>
+    <div class="scard"><div class="sico" style="background:var(--redbg);color:var(--red)"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="snum" id="dwgt">—</div><div class="slbl">Кг</div><div class="ssub" id="dwgts" style="color:var(--text3)">старт 104.3</div></div>
+    <div class="scard" onclick="go('prog')" style="cursor:pointer"><div class="sico" style="background:var(--yellowbg);color:var(--yellow)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="snum" id="dstrk">0</div><div class="slbl">Дней серия</div><div class="ssub" style="color:var(--yellow)">🔥 стрик</div></div>
   </div>
   <div class="tgcard" id="ccard" onclick="togCr()">
-    <div class="tgico" style="color:var(--text2)"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M3 13h18"/><path d="M8 21l4-8 4 8"/></svg></div>
-    <div class="tginfo"><div class="tgname">Креатин 5–6г</div><div class="tgsub" id="csub">Не принят</div></div>
+    <div class="tgico"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/><path d="M3 13h18"/><path d="M8 21l4-8 4 8"/></svg></div>
+    <div class="tginfo"><div class="tgname">Креатин 5–6г</div><div class="tgsub" id="csub">Не принят сегодня</div></div>
     <div class="sw" id="csw"></div>
   </div>
   <div class="card">
-    <div class="ch"><div class="clbl">Серия дней</div><div style="font-size:12px;color:var(--yellow)">🔥 7 дней</div></div>
+    <div class="ch"><div class="clbl">Серия дней</div><div style="font-size:12px;color:var(--yellow);font-weight:700">🔥 7 дней</div></div>
     <div class="strk7 cp" style="padding-top:0" id="s7row"></div>
   </div>
-  <div class="card cp"><div class="clbl" style="margin-bottom:9px">Быстро добавить воду</div>
+  <div class="card cp"><div class="clbl" style="margin-bottom:10px">Быстро добавить воду</div>
     <div class="wbtns">
       <button class="wbtn" onclick="addW(.2)">200мл</button>
       <button class="wbtn" onclick="addW(.3)">300мл</button>
@@ -308,51 +325,49 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
       <button class="wbtn" onclick="addW(1)">1л</button>
     </div>
   </div>
-  <div class="card cp"><div class="clbl" style="margin-bottom:9px">Записать вес</div>
+  <div class="card cp"><div class="clbl" style="margin-bottom:10px">Записать вес</div>
     <div class="irow"><input class="inp" id="winp" type="number" step=".1" placeholder="103.5"><button class="btn btn-r btn-sm" onclick="savW()">Сохранить</button></div>
   </div>
-  <div class="card cp"><div class="clbl" style="margin-bottom:9px">Шаги за день</div>
+  <div class="card cp"><div class="clbl" style="margin-bottom:10px">Шаги за день</div>
     <div class="irow"><input class="inp" id="sinp" type="number" placeholder="6000"><button class="btn btn-r btn-sm" onclick="savS()">OK</button></div>
   </div>
 </div>
 
 <!-- FOOD -->
 <div class="page" id="p-food">
-  <div class="sw-inp"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="srch" id="fsrch" placeholder="Поиск продукта..." oninput="filt(this.value)"></div>
-  <div id="logwrap">
-    <div class="sechead"><div class="seclbl">Съедено сегодня</div><div id="logtot" style="font-size:11px;color:var(--text3)"></div></div>
-    <div id="loglist"></div>
+  <div class="sw-inp">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="srch" id="fsrch" placeholder="Поиск в базе USDA (1М+ продуктов)..." oninput="handleSearch(this.value)">
   </div>
-  <div class="sechead" style="margin-top:14px"><div class="seclbl">Добавить</div><div class="secact" onclick="openCF()">+ Своё блюдо</div></div>
-  <div class="cats" id="catrow"></div>
-  <div class="flist" id="flist"></div>
+  <div id="usda-results" style="display:none">
+    <div class="sechead"><div class="seclbl">Результаты поиска</div><div class="secact" onclick="clearSearch()">Закрыть</div></div>
+    <div id="usda-list"></div>
+  </div>
+  <div id="local-section">
+    <div id="logwrap">
+      <div class="sechead"><div class="seclbl">Съедено сегодня</div><div id="logtot" style="font-size:11px;color:var(--text3)"></div></div>
+      <div id="loglist"></div>
+    </div>
+    <div class="sechead" style="margin-top:14px"><div class="seclbl">Быстрое добавление</div><div class="secact" onclick="openCF()">+ Своё блюдо</div></div>
+    <div class="cats" id="catrow"></div>
+    <div class="flist" id="flist"></div>
+  </div>
 </div>
 
 <!-- WORKOUT -->
 <div class="page" id="p-work">
   <div class="wscroll" id="wscroll"></div>
-  <div class="wbanner" id="wbanner">
-    <div class="wbtype" id="wbtype">СЕГОДНЯ</div>
-    <div class="wbname" id="wbname">—</div>
-    <div class="wbsub" id="wbsub"></div>
-  </div>
+  <div class="wbanner"><div class="wbtype" id="wbtype">СЕГОДНЯ</div><div class="wbname" id="wbname">—</div><div class="wbsub" id="wbsub"></div></div>
   <div id="exlist"></div>
   <button class="btn btn-g" style="margin-top:4px" onclick="markDone()">
-    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-    Отметить выполненной
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Отметить выполненной
   </button>
 </div>
 
 <!-- WATER -->
 <div class="page" id="p-watr">
-  <div class="card">
-    <div class="whero">
-      <div class="wbignum" id="wbig">0.0</div>
-      <div class="wunit">из 3.0 литров</div>
-      <div class="wpbar"><div class="wpfill" id="wpb" style="width:0%"></div></div>
-    </div>
-  </div>
-  <div class="card cp"><div class="clbl" style="margin-bottom:10px">Добавить</div>
+  <div class="card"><div class="whero"><div class="wbignum" id="wbig">0.0</div><div class="wunit">из 3.0 литров</div><div class="wpbar"><div class="wpfill" id="wpb" style="width:0%"></div></div></div></div>
+  <div class="card cp"><div class="clbl" style="margin-bottom:12px">Добавить</div>
     <div class="wgrid">
       <div class="wtile" onclick="addW(.15)"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg><div class="wtval">150</div><div class="wtlbl">мл</div></div>
       <div class="wtile" onclick="addW(.2)"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg><div class="wtval">200</div><div class="wtlbl">мл</div></div>
@@ -362,7 +377,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
       <div class="wtile" onclick="addW(1)"><svg viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg><div class="wtval">1000</div><div class="wtlbl">мл</div></div>
     </div>
   </div>
-  <div class="card cp"><div class="clbl" style="margin-bottom:9px">Своё количество</div>
+  <div class="card cp"><div class="clbl" style="margin-bottom:10px">Своё количество</div>
     <div class="irow"><input class="inp" id="cwi" type="number" placeholder="250 мл"><button class="btn btn-r btn-sm" onclick="addCW()">+</button></div>
   </div>
   <button class="btn btn-g" onclick="resetW()" style="margin-top:4px">Сбросить на 0</button>
@@ -370,10 +385,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
 
 <!-- PROGRESS -->
 <div class="page" id="p-prog">
-  <div class="strk">
-    <div class="snum" id="pgstrk">0</div>
-    <div><div class="stitle">🔥 Серия дней</div><div class="ssb">дней подряд с данными</div></div>
-  </div>
+  <div class="strk"><div class="snum" id="pgstrk">0</div><div><div class="stitle">🔥 Серия дней</div><div class="sstitle">дней подряд с данными</div></div></div>
   <div class="strk7" id="pg7row"></div>
   <div class="pgmet">
     <div class="pgmhead"><div class="pgmlbl">⚖️ Вес</div><div class="pgbadge n" id="pwbadge">—</div></div>
@@ -386,18 +398,11 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
     <div class="pgnum" id="pgwaist">—</div><div class="pgunit">см · старт 104</div>
     <div class="irow" style="margin-top:12px"><input class="inp" id="pgwaisinp" type="number" step=".1" placeholder="102.0" style="flex:1"><button class="btn btn-r btn-sm" onclick="savWaist()">+ Добавить</button></div>
   </div>
-  <div class="pgmet">
-    <div class="pgmhead"><div class="pgmlbl">🍽 Среднее за 7 дней</div></div>
-    <div class="pgnum" id="pgavg">—</div><div class="pgunit">ккал / день</div>
-  </div>
-  <div class="pgmet">
-    <div class="pgmlbl" style="margin-bottom:10px">💪 Тренировки</div>
-    <div id="pgwrk" style="color:var(--text3);font-size:13px">Нет записей</div>
-  </div>
+  <div class="pgmet"><div class="pgmhead"><div class="pgmlbl">🍽 Среднее за 7 дней</div></div><div class="pgnum" id="pgavg">—</div><div class="pgunit">ккал / день</div></div>
+  <div class="pgmet"><div class="pgmlbl" style="margin-bottom:10px">💪 Тренировки</div><div id="pgwrk" style="color:var(--text3);font-size:13px">Нет записей</div></div>
 </div>
 
-</div><!-- /pages -->
-</div><!-- /app -->
+</div></div>
 
 <!-- FOOD MODAL -->
 <div class="ov" id="fmod" onclick="clov(event,'fmod')">
@@ -434,13 +439,21 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
 <div class="toast" id="toast"></div>
 
 <script>
-const tg=window.Telegram?.WebApp;
-if(tg){tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor('#0d0d0d');tg.setBackgroundColor&&tg.setBackgroundColor('#0d0d0d')}
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+const USDA_KEY = 'ifeGCxmZB0jEsnxd1QLicRvO92NeL8Xg6AumX2Vi';
+const tg = window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand()}
 
-const TODAY=new Date().toISOString().slice(0,10);
-const WDAY=(new Date().getDay()+6)%7;
-const SCH={0:'strength',1:'strength',2:'cardio',3:'strength',4:'strength',5:'cardio',6:'flex'};
-const TGT={strength:{k:2300,p:200,f:65,c:235,w:3,s:6000},cardio:{k:2100,p:200,f:70,c:190,w:3,s:6000},flex:{k:2500,p:200,f:70,c:260,w:3,s:7000}};
+const TODAY = new Date().toISOString().slice(0,10);
+const WDAY = (new Date().getDay()+6)%7;
+const SCH = {0:'strength',1:'strength',2:'cardio',3:'strength',4:'strength',5:'cardio',6:'flex'};
+const TGT = {
+  strength:{k:2300,p:200,f:65,c:235,w:3,s:6000},
+  cardio:{k:2100,p:200,f:70,c:190,w:3,s:6000},
+  flex:{k:2500,p:200,f:70,c:260,w:3,s:7000}
+};
 const DR=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
 const DI=['💪','🦵','🏃','💪','🦵','🏃','😴'];
 const WN=['Верх А','Низ А','Кардио','Верх Б','Низ Б','Кардио','Отдых'];
@@ -448,98 +461,77 @@ const WT=['Силовая','Силовая','Кардио','Силовая','С�
 const WK={
   0:[{n:'Жим штанги с пола',s:'4 подхода',r:'6–10 повт'},{n:'Тяга штанги в наклоне',s:'4 подхода',r:'8–12 повт'},{n:'Жим штанги стоя',s:'3 подхода',r:'6–10 повт'},{n:'Отжимания на упорах',s:'3 подхода',r:'до отказа'},{n:'Сгибание рук EZ-гриф',s:'3 подхода',r:'8–12 повт'},{n:'Французский жим',s:'3 подхода',r:'10–15 повт'},{n:'Подъёмы в стороны',s:'2–3 подхода',r:'12–20 повт'}],
   1:[{n:'Зерчер-присед',s:'4 подхода',r:'6–10 повт'},{n:'Румынская тяга',s:'4 подхода',r:'8–12 повт'},{n:'Болгарские выпады',s:'3 подхода',r:'8–12 на ногу'},{n:'Ягодичный мост со штангой',s:'3 подхода',r:'10–15 повт'},{n:'Подъёмы на икры',s:'4 подхода',r:'12–20 повт'},{n:'Планка',s:'3 подхода',r:'30–60 сек'},{n:'Обратные скручивания',s:'3 подхода',r:'12–20 повт'}],
-  2:[{n:'Дорожка — быстрая ходьба/бег',s:'1 подход',r:'35–45 мин'},{n:'Интервалы: 3мин бег / 2мин ходьба × 6',s:'1 подход',r:'30 мин'}],
+  2:[{n:'Дорожка — ходьба/бег',s:'1 подход',r:'35–45 мин'},{n:'Интервалы 3мин бег / 2мин ходьба × 6',s:'1 подход',r:'30 мин'}],
   3:[{n:'Отжимания с рюкзаком',s:'4 подхода',r:'8–15 повт'},{n:'Тяга штанги (тяжёлая)',s:'4 подхода',r:'6–10 повт'},{n:'Жим с пола с паузой',s:'3 подхода',r:'8–12 повт'},{n:'Жим стоя (лёгкий)',s:'3 подхода',r:'8–12 повт'},{n:'Пуловер',s:'3 подхода',r:'10–15 повт'},{n:'Сгибание рук EZ',s:'3 подхода',r:'10–15 повт'},{n:'Трицепс над головой',s:'3 подхода',r:'10–15 повт'},{n:'Задняя дельта',s:'2–3 подхода',r:'12–20 повт'}],
   4:[{n:'Тяга классическая',s:'4 подхода',r:'5–8 повт'},{n:'Зерчер-присед (средний)',s:'3 подхода',r:'10–12 повт'},{n:'Выпады назад',s:'3 подхода',r:'8–12 на ногу'},{n:'Good morning',s:'3 подхода',r:'10–15 повт'},{n:'Одноногий ягодичный мост',s:'2–3 подхода',r:'12–15 на ногу'},{n:'Скручивания с блином',s:'3 подхода',r:'12–20 повт'},{n:'Боковая планка',s:'3 подхода',r:'30–45 сек'}],
   5:[{n:'Дорожка или прогулка',s:'1 подход',r:'40–60 мин'}],
 };
 
-const CATS=['Все','Мясо','Молочка','Крупы','Овощи','Фрукты','Протеин','Снеки','Готовые блюда'];
+const CATS=['Все','Мясо','Молочка','Крупы','Овощи','Фрукты','Протеин','Снеки','Готовые'];
 const FDB=[
   {cat:'Мясо',i:'🍗',n:'Курица грудка (сырая)',k:112,p:23,f:2,c:0},
   {cat:'Мясо',i:'🍗',n:'Курица бедро (сырое)',k:172,p:18,f:11,c:0},
   {cat:'Мясо',i:'🥩',n:'Фарш индейки',k:112,p:19,f:4,c:0},
-  {cat:'Мясо',i:'🥩',n:'Куриная котлета (жареная)',k:220,p:17,f:15,c:2},
-  {cat:'Мясо',i:'🥩',n:'Шашлык из курицы',k:135,p:20,f:6,c:0},
   {cat:'Мясо',i:'🥚',n:'Яйцо варёное',k:155,p:12.5,f:10.5,c:0.7,dg:60},
-  {cat:'Мясо',i:'🥚',n:'Яйцо жареное',k:196,p:13,f:15,c:1,dg:60},
   {cat:'Молочка',i:'🧀',n:'Творог 2%',k:101,p:18,f:2,c:3},
   {cat:'Молочка',i:'🧀',n:'Творог 5%',k:120,p:17,f:5,c:3},
   {cat:'Молочка',i:'🥛',n:'Йогурт греческий 2%',k:66,p:11,f:2,c:4},
   {cat:'Молочка',i:'🥛',n:'Кефир 1%',k:40,p:4,f:1,c:5},
   {cat:'Молочка',i:'🥛',n:'Молоко 2.5%',k:52,p:2.9,f:2.5,c:4.7},
   {cat:'Молочка',i:'🧀',n:'Сыр твёрдый',k:370,p:25,f:30,c:0},
-  {cat:'Молочка',i:'🧀',n:'Сыр плавленый',k:295,p:7,f:28,c:0},
   {cat:'Молочка',i:'🥣',n:'Сметана 15%',k:160,p:2.8,f:15,c:3.2},
-  {cat:'Молочка',i:'🥣',n:'Сырники домашние',k:195,p:14,f:7,c:20},
   {cat:'Крупы',i:'🍝',n:'Макароны сухие',k:350,p:13,f:1,c:70},
   {cat:'Крупы',i:'🍝',n:'Макароны варёные',k:158,p:6,f:1,c:31},
-  {cat:'Крупы',i:'🍚',n:'Рис белый сухой',k:350,p:7,f:1,c:78},
-  {cat:'Крупы',i:'🍚',n:'Рис варёный',k:130,p:2.7,f:0.3,c:28},
+  {cat:'Крупы',i:'🍚',n:'Рис сухой',k:350,p:7,f:1,c:78},
   {cat:'Крупы',i:'🌾',n:'Гречка сухая',k:353,p:13,f:3,c:70},
   {cat:'Крупы',i:'🌾',n:'Гречка варёная',k:132,p:4.5,f:1,c:25},
   {cat:'Крупы',i:'🌾',n:'Овсянка сухая',k:372,p:13,f:7,c:65},
   {cat:'Крупы',i:'🥔',n:'Картошка сырая',k:77,p:2,f:0.1,c:17},
   {cat:'Крупы',i:'🥔',n:'Картошка варёная',k:82,p:2,f:0.1,c:18},
-  {cat:'Крупы',i:'🥔',n:'Картошка запечённая',k:93,p:2.5,f:0.1,c:21},
-  {cat:'Крупы',i:'🥔',n:'Картофельное пюре',k:95,p:2,f:3,c:15},
-  {cat:'Крупы',i:'🍞',n:'Хлеб белый',k:265,p:8,f:3,c:52},
   {cat:'Крупы',i:'🌯',n:'Тортилья пшеничная',k:300,p:6,f:8,c:50,dg:50},
   {cat:'Овощи',i:'🍅',n:'Помидор',k:18,p:0.9,f:0.2,c:3.9},
   {cat:'Овощи',i:'🥒',n:'Огурец',k:15,p:0.7,f:0.1,c:3.1},
   {cat:'Овощи',i:'🫑',n:'Перец болгарский',k:31,p:1,f:0.3,c:6},
-  {cat:'Овощи',i:'🧅',n:'Лук репчатый',k:41,p:1.4,f:0.2,c:8.2},
   {cat:'Овощи',i:'🥕',n:'Морковь',k:35,p:0.9,f:0.1,c:7.5},
   {cat:'Овощи',i:'🥦',n:'Брокколи',k:34,p:2.8,f:0.4,c:5},
-  {cat:'Овощи',i:'🌽',n:'Кукуруза консервированная',k:85,p:3,f:1,c:17},
-  {cat:'Овощи',i:'🥗',n:'Салат листовой',k:15,p:1.3,f:0.2,c:2.3},
   {cat:'Фрукты',i:'🍌',n:'Банан',k:89,p:1.1,f:0.3,c:23,dg:120},
   {cat:'Фрукты',i:'🍎',n:'Яблоко',k:52,p:0.3,f:0.2,c:14,dg:180},
   {cat:'Фрукты',i:'🍊',n:'Апельсин',k:47,p:0.9,f:0.1,c:12,dg:150},
-  {cat:'Фрукты',i:'🍇',n:'Виноград',k:67,p:0.6,f:0.4,c:17},
   {cat:'Фрукты',i:'🍓',n:'Клубника',k:33,p:0.7,f:0.3,c:8},
   {cat:'Фрукты',i:'🫐',n:'Черника',k:57,p:0.7,f:0.3,c:14},
-  {cat:'Фрукты',i:'🥝',n:'Киви',k:61,p:1.1,f:0.5,c:15,dg:90},
-  {cat:'Фрукты',i:'🍉',n:'Арбуз',k:30,p:0.6,f:0.2,c:8},
   {cat:'Протеин',i:'🥤',n:'Протеин Allnutrition Whey',k:403,p:70,f:6.6,c:16,dg:30},
   {cat:'Протеин',i:'🥤',n:'Just Whey GymBeam',k:348,p:66.7,f:5.2,c:6.7,dg:33},
   {cat:'Снеки',i:'🍫',n:'Шоколад тёмный',k:550,p:6,f:35,c:55},
-  {cat:'Снеки',i:'🍪',n:'Печенье',k:480,p:6,f:20,c:70},
   {cat:'Снеки',i:'🌰',n:'Грецкий орех',k:654,p:15,f:65,c:14},
   {cat:'Снеки',i:'🥜',n:'Арахис',k:567,p:26,f:49,c:16},
-  {cat:'Снеки',i:'🌻',n:'Семечки подсолнечника',k:578,p:21,f:53,c:10},
-  {cat:'Снеки',i:'🍩',n:'Пончик',k:380,p:4,f:20,c:48},
-  {cat:'Готовые блюда',i:'🍕',n:'Пицца (1 кусок)',k:266,p:11,f:10,c:34,dg:100},
-  {cat:'Готовые блюда',i:'🌯',n:'Шаурма с курицей',k:220,p:14,f:10,c:22,dg:300},
-  {cat:'Готовые блюда',i:'🍔',n:'Бургер',k:260,p:14,f:13,c:24,dg:200},
-  {cat:'Готовые блюда',i:'🥗',n:'Салат Цезарь с курицей',k:180,p:9,f:13,c:9},
-  {cat:'Готовые блюда',i:'🍜',n:'Плов с курицей',k:210,p:9,f:8,c:27},
-  {cat:'Готовые блюда',i:'🥟',n:'Вареники с картошкой',k:75,p:2.5,f:1.5,c:14,dg:40},
-  {cat:'Готовые блюда',i:'🥟',n:'Пельмени',k:165,p:9,f:6,c:19,dg:100},
-  {cat:'Готовые блюда',i:'🥞',n:'Блин',k:165,p:4,f:6,c:25,dg:70},
-  {cat:'Готовые блюда',i:'🥘',n:'Гречка с мясом',k:138,p:10,f:4,c:17},
-  {cat:'Готовые блюда',i:'🍲',n:'Курица с картошкой запечённая',k:130,p:13,f:4,c:11},
-  {cat:'Готовые блюда',i:'🥙',n:'Лапша с мясом и овощами',k:135,p:8,f:5,c:17},
+  {cat:'Снеки',i:'🌻',n:'Семечки',k:578,p:21,f:53,c:10},
+  {cat:'Готовые',i:'🍕',n:'Пицца (кусок)',k:266,p:11,f:10,c:34,dg:100},
+  {cat:'Готовые',i:'🌯',n:'Шаурма с курицей',k:220,p:14,f:10,c:22,dg:300},
+  {cat:'Готовые',i:'🥗',n:'Салат Цезарь с курицей',k:180,p:9,f:13,c:9},
+  {cat:'Готовые',i:'🍜',n:'Плов с курицей',k:210,p:9,f:8,c:27},
+  {cat:'Готовые',i:'🥟',n:'Вареники с картошкой',k:75,p:2.5,f:1.5,c:14,dg:40},
+  {cat:'Готовые',i:'🥘',n:'Гречка с мясом',k:138,p:10,f:4,c:17},
+  {cat:'Готовые',i:'🍲',n:'Курица с картошкой (запечённая)',k:130,p:13,f:4,c:11},
 ];
 
+// ═══════════════════════════════════════
 // STORAGE
+// ═══════════════════════════════════════
 function gLS(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function sLS(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function gDay(d=TODAY){const data=gLS('phy4',{});return data[d]||{}}
-function sDay(d=TODAY,day){const data=gLS('phy4',{});data[d]=day;sLS('phy4',data)}
-function gCF(){return gLS('phy4_cf',[])}
-function sCF(f){sLS('phy4_cf',f)}
+function gDay(d=TODAY){const data=gLS('phy5',{});return data[d]||{}}
+function sDay(d=TODAY,day){const data=gLS('phy5',{});data[d]=day;sLS('phy5',data)}
+function gCF(){return gLS('phy5_cf',[])}
+function sCF(f){sLS('phy5_cf',f)}
 
-// HELPERS
 function T(){return TGT[SCH[WDAY]]||TGT.strength}
 function pct(a,b){return Math.min((a||0)/b*100,100)}
 function fmt(n){return Math.round(n||0)}
 function se(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
 function ss(id,p,v){const e=document.getElementById(id);if(e)e.style[p]=v}
 function gwday(ds){return(new Date(ds+'T12:00:00').getDay()+6)%7}
-
 function streak(){
-  const data=gLS('phy4',{});let s=0;
+  const data=gLS('phy5',{});let s=0;
   for(let i=0;i<90;i++){
     const d=new Date();d.setDate(d.getDate()-i);
     const ds=d.toISOString().slice(0,10);
@@ -548,75 +540,73 @@ function streak(){
   }return s;
 }
 
+// ═══════════════════════════════════════
+// FULLSCREEN
+// ═══════════════════════════════════════
+let isFS=false;
+function toggleFS(){
+  isFS=!isFS;
+  if(isFS){
+    document.documentElement.requestFullscreen?.();
+    document.getElementById('fsIcon').innerHTML='<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>';
+  }else{
+    document.exitFullscreen?.();
+    document.getElementById('fsIcon').innerHTML='<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+  }
+}
+
+// ═══════════════════════════════════════
 // RENDER
+// ═══════════════════════════════════════
 function render(){
   const day=gDay(),t=T();
-  // Header
   const now=new Date();
   const he=document.getElementById('hdate');
   if(he)he.textContent=now.toLocaleDateString('ru',{day:'numeric',month:'long'});
   const ht=document.getElementById('htitle');
   const h=now.getHours();
   const gr=h<12?'Доброе утро ☀️':h<18?'Добрый день 💪':'Добрый вечер 🌙';
-  if(ht)ht.innerHTML=gr;
+  if(ht)ht.textContent=gr;
 
-  // Food
   const food=(day.food||[]).reduce((a,f)=>({k:a.k+f.k,p:a.p+f.p,f:a.f+f.f,c:a.c+f.c}),{k:0,p:0,f:0,c:0});
   se('dk',fmt(food.k));se('dkt',t.k);
   const rem=t.k-fmt(food.k);
   const re=document.getElementById('drem');
-  if(re){re.textContent=rem;re.style.color=rem<0?'var(--red)':'var(--green)'}
+  if(re){re.textContent=rem;re.style.color=rem<0?'var(--red)':'rgba(255,255,255,0.9)'}
   ss('dkb','width',pct(food.k,t.k)+'%');
-  document.getElementById('dp').innerHTML=fmt(food.p)+'<span style="font-size:11px;color:var(--text3)">г</span>';
-  document.getElementById('dc').innerHTML=fmt(food.c)+'<span style="font-size:11px;color:var(--text3)">г</span>';
-  document.getElementById('df').innerHTML=fmt(food.f)+'<span style="font-size:11px;color:var(--text3)">г</span>';
+  se('dp',fmt(food.p)+'г');se('dc',fmt(food.c)+'г');se('df',fmt(food.f)+'г');
   ss('dpb','width',pct(food.p,t.p)+'%');ss('dcb','width',pct(food.c,t.c)+'%');ss('dfb','width',pct(food.f,t.f)+'%');
 
-  // Water
   const w=day.water||0;
-  se('dwn',w.toFixed(1));se('wbig',w.toFixed(1));
-  ss('wpb','width',pct(w,t.w)+'%');
+  se('dwn',w.toFixed(1));se('wbig',w.toFixed(1));ss('wpb','width',pct(w,t.w)+'%');
   const ws=document.getElementById('dws');
   if(ws){ws.textContent=w>=t.w?'✅ Цель выполнена!':'цель '+t.w+' л';ws.style.color=w>=t.w?'var(--green)':'var(--text3)'}
 
-  // Steps
   const s=day.steps||0;
   se('dsn',s>=1000?(s/1000).toFixed(1)+'k':s);
   const ss2=document.getElementById('dss');
   if(ss2){ss2.textContent=s>=t.s?'✅ Цель!':'цель '+t.s.toLocaleString('ru');ss2.style.color=s>=t.s?'var(--green)':'var(--text3)'}
 
-  // Weight
   se('dwgt',day.weight||'—');
-  if(day.weight){const diff=(day.weight-104.3).toFixed(1);const ws2=document.getElementById('dwgts');if(ws2){ws2.textContent=(diff>0?'+':'')+diff+' кг от старта';ws2.style.color=diff<0?'var(--green)':'var(--text3)'}}
+  if(day.weight){const diff=(day.weight-104.3).toFixed(1);const ws2=document.getElementById('dwgts');if(ws2){ws2.textContent=(diff>0?'+':'')+diff+' кг';ws2.style.color=diff<0?'var(--green)':'var(--text3)'}}
 
-  // Creatine
   const cr=day.creatine||false;
   const cc=document.getElementById('ccard');if(cc)cc.className='tgcard'+(cr?' on':'');
   const csw=document.getElementById('csw');if(csw)csw.className='sw'+(cr?' on':'');
   se('csub',cr?'✅ Принят сегодня':'Не принят сегодня');
 
-  // Streak
-  const strk=streak();
-  se('dstrk',strk);se('pgstrk',strk);
-
-  // Streak row 7 days
-  const rows=['s7row','pg7row'];
-  rows.forEach(rid=>{
+  const strk=streak();se('dstrk',strk);se('pgstrk',strk);
+  ['s7row','pg7row'].forEach(rid=>{
     const row=document.getElementById(rid);if(!row)return;
-    const data=gLS('phy4',{});row.innerHTML='';
+    const data=gLS('phy5',{});row.innerHTML='';
     for(let i=6;i>=0;i--){
-      const d=new Date();d.setDate(d.getDate()-i);
-      const ds=d.toISOString().slice(0,10);
-      const dd=data[ds]||{};
-      const has=(dd.food&&dd.food.length)||dd.weight||dd.water;
-      const isT=ds===TODAY;
-      const el=document.createElement('div');
+      const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().slice(0,10);
+      const dd=data[ds]||{};const has=(dd.food&&dd.food.length)||dd.weight||dd.water;
+      const isT=ds===TODAY;const el=document.createElement('div');
       el.className='s7d'+(has?' don':'')+(isT?' tod':'');
-      el.textContent=DR[gwday(ds)];
-      row.appendChild(el);
+      el.textContent=DR[gwday(ds)];row.appendChild(el);
     }
   });
-
   renderLog();renderProg();
 }
 
@@ -629,7 +619,7 @@ function renderLog(){
   list.innerHTML='';
   food.forEach((f,i)=>{
     const el=document.createElement('div');el.className='litem';
-    el.innerHTML=`<div class="ldot"></div><div class="linfo"><div class="lname">${f.ic||'🍽'} ${f.nm}</div><div class="lsub">Б${fmt(f.p)}г Ж${fmt(f.f)}г У${fmt(f.c)}г</div></div><div class="lkcal">${fmt(f.k)}</div><div class="ldel" onclick="rmFood(${i})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
+    el.innerHTML=`<div class="ldot"></div><div class="linfo"><div class="lname">${f.ic||'🍽'} ${f.nm}</div><div class="lsub">Б${fmt(f.p)}г · Ж${fmt(f.f)}г · У${fmt(f.c)}г</div></div><div class="lkcal">${fmt(f.k)}</div><div class="ldel" onclick="rmFood(${i})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
     list.appendChild(el);
   });
 }
@@ -641,25 +631,73 @@ function renderFDB(){
     CATS.forEach(c=>{const btn=document.createElement('div');btn.className='cat'+(c==='Все'?' on':'');btn.textContent=c;btn.onclick=()=>{accat=c;document.querySelectorAll('.cat').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderFL()};cats.appendChild(btn)});
   }renderFL();
 }
-function filt(q){sq=q;renderFL()}
+
 function renderFL(){
   const list=document.getElementById('flist');if(!list)return;
   let items=[...FDB,...gCF().map(f=>({...f,custom:true}))];
-  if(sq)items=items.filter(f=>f.n.toLowerCase().includes(sq.toLowerCase()));
-  else if(accat!=='Все')items=items.filter(f=>f.cat===accat);
+  if(accat!=='Все')items=items.filter(f=>f.cat===accat);
   list.innerHTML='';
   items.forEach(f=>{
     const el=document.createElement('div');el.className='fitem';
     el.innerHTML=`<div class="fico">${f.i||'🍽'}</div><div class="finfo"><div class="fname">${f.n}${f.custom?'<span style="font-size:9px;color:var(--red);margin-left:5px">мой</span>':''}</div><div class="fmacro">Б${f.p}г · Ж${f.f}г · У${f.c}г</div></div><div class="fkcal">${f.k}</div><div class="fadd"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>`;
     el.onclick=()=>openFM(f);list.appendChild(el);
   });
-  if(!items.length)list.innerHTML='<div class="empty">Ничего не найдено</div>';
 }
 
+// ═══════════════════════════════════════
+// USDA SEARCH
+// ═══════════════════════════════════════
+let searchTimer=null;
+function handleSearch(q){
+  clearTimeout(searchTimer);
+  if(!q||q.length<2){
+    document.getElementById('usda-results').style.display='none';
+    document.getElementById('local-section').style.display='block';
+    return;
+  }
+  searchTimer=setTimeout(()=>searchUSDA(q),500);
+}
+
+async function searchUSDA(q){
+  const list=document.getElementById('usda-list');
+  const res=document.getElementById('usda-results');
+  const loc=document.getElementById('local-section');
+  res.style.display='block';loc.style.display='none';
+  list.innerHTML='<div class="usda-loading">🔍 Ищем в базе USDA...</div>';
+  try{
+    const r=await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(q)}&pageSize=10&dataType=SR%20Legacy,Survey%20(FNDDS)&api_key=${USDA_KEY}`);
+    const d=await r.json();
+    list.innerHTML='';
+    if(!d.foods||!d.foods.length){list.innerHTML='<div class="empty">Ничего не найдено</div>';return}
+    d.foods.forEach(food=>{
+      const n=food.foodNutrients||[];
+      const get=id=>Math.round((n.find(x=>x.nutrientId===id)?.value||0)*10)/10;
+      const kcal=get(1008)||get(2047);
+      const prot=get(1003);
+      const fat=get(1004);
+      const carb=get(1005);
+      const el=document.createElement('div');
+      el.className='usda-item';
+      el.innerHTML=`<div class="usda-ico">🥗</div><div class="finfo"><div class="fname">${food.description.slice(0,50)}<span class="usda-badge">USDA</span></div><div class="fmacro">Б${prot}г · Ж${fat}г · У${carb}г на 100г</div></div><div class="fkcal">${kcal}</div><div class="fadd"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>`;
+      el.onclick=()=>openFM({i:'🥗',n:food.description.slice(0,50),k:kcal,p:prot,f:fat,c:carb});
+      list.appendChild(el);
+    });
+  }catch(e){list.innerHTML='<div class="empty">Ошибка поиска. Проверь интернет.</div>'}
+}
+
+function clearSearch(){
+  document.getElementById('fsrch').value='';
+  document.getElementById('usda-results').style.display='none';
+  document.getElementById('local-section').style.display='block';
+}
+
+// ═══════════════════════════════════════
+// WORKOUT
+// ═══════════════════════════════════════
 let vwday=WDAY;
 function renderWork(){
   const ws=document.getElementById('wscroll');
-  if(ws){ws.innerHTML='';const data=gLS('phy4',{});
+  if(ws){ws.innerHTML='';const data=gLS('phy5',{});
     for(let i=0;i<7;i++){const diff=i-WDAY;const dt=new Date();dt.setDate(dt.getDate()+diff);const ds=dt.toISOString().slice(0,10);const isDone=(data[ds]||{}).workoutDone;const isA=i===vwday;const btn=document.createElement('div');btn.className='wday'+(isA?' active':'')+(isDone&&!isA?' done':'');btn.innerHTML=`<div class="wdname">${DR[i]}</div><div class="wdico">${isDone?'✅':DI[i]}</div>`;const wd=i;btn.onclick=()=>{vwday=wd;renderWork()};ws.appendChild(btn);}}
   se('wbname',WN[vwday]);se('wbtype',WT[vwday].toUpperCase());se('wbsub',DR[vwday]+(vwday===WDAY?' · Сегодня':''));
   const el=document.getElementById('exlist');if(!el)return;
@@ -670,21 +708,23 @@ function renderWork(){
 }
 
 function renderProg(){
-  const data=gLS('phy4',{});const dates=[];
+  const data=gLS('phy5',{});const dates=[];
   for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dates.push(d.toISOString().slice(0,10))}
   const ws=dates.map(d=>data[d]?.weight||null);const vw=ws.filter(Boolean);
   const ch=document.getElementById('pgwchart');
-  if(ch){ch.innerHTML='';if(vw.length>1){const mn=Math.min(...vw)-.3,mx=Math.max(...vw)+.3;dates.forEach((d,i)=>{const w=ws[i];const b=document.createElement('div');b.className='cb'+(d===TODAY?' ct':w?' cf':'');b.style.height=w?((w-mn)/(mx-mn)*36+4)+'px':'3px';ch.appendChild(b);})}}
+  if(ch){ch.innerHTML='';if(vw.length>1){const mn=Math.min(...vw)-.3,mx=Math.max(...vw)+.3;dates.forEach((d,i)=>{const w=ws[i];const b=document.createElement('div');b.className='cb'+(d===TODAY?' ct':w?' cf':'');b.style.height=w?((w-mn)/(mx-mn)*40+4)+'px':'3px';ch.appendChild(b);})}}
   if(vw.length){const cur=vw[vw.length-1],diff=(cur-104.3).toFixed(1);se('pgw',cur);const b=document.getElementById('pwbadge');if(b){b.textContent=(diff>0?'+':'')+diff+' кг';b.className='pgbadge '+(diff<=0?'g':'b')}}
   const waists=Object.entries(data).filter(([k,v])=>v.waist).sort((a,b)=>a[0].localeCompare(b[0]));
   if(waists.length){const cur=waists[waists.length-1][1].waist,diff=(cur-104).toFixed(1);se('pgwaist',cur);const b=document.getElementById('pwaistb');if(b){b.textContent=(diff>0?'+':'')+diff+' см';b.className='pgbadge '+(diff<=0?'g':'b')}}
   const kcals=dates.slice(-7).map(d=>(data[d]?.food||[]).reduce((a,f)=>a+f.k,0)).filter(k=>k>0);
   if(kcals.length)se('pgavg',fmt(kcals.reduce((a,b)=>a+b,0)/kcals.length));
   const wh=document.getElementById('pgwrk');
-  if(wh){const entries=Object.entries(data).filter(([k,v])=>v.workoutDone).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6);if(entries.length)wh.innerHTML=entries.map(([d])=>`<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between"><span style="color:var(--green)">✓ ${WN[gwday(d)]}</span><span style="color:var(--text3)">${d}</span></div>`).join('')}
+  if(wh){const entries=Object.entries(data).filter(([k,v])=>v.workoutDone).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6);if(entries.length)wh.innerHTML=entries.map(([d])=>`<div style="padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between"><span style="color:var(--green);font-weight:700">✓ ${WN[gwday(d)]}</span><span style="color:var(--text3)">${d}</span></div>`).join('')}
 }
 
+// ═══════════════════════════════════════
 // ACTIONS
+// ═══════════════════════════════════════
 function togCr(){const d=gDay();d.creatine=!d.creatine;sDay(TODAY,d);render();toast(d.creatine?'💊 Креатин принят!':'Отметка снята')}
 function addW(l){const d=gDay();d.water=Math.round(((d.water||0)+l)*100)/100;sDay(TODAY,d);render();toast('💧 +'+(l*1000)+'мл · итого '+d.water.toFixed(1)+'л')}
 function addCW(){const v=parseFloat(document.getElementById('cwi').value);if(!v)return;addW(v/1000);document.getElementById('cwi').value=''}
@@ -733,14 +773,15 @@ function savCF(){
 }
 
 // NAV
-const TABS2=['dash','food','work','watr','prog'];
+const TABS=['dash','food','work','watr','prog'];
 function go(t){
-  TABS2.forEach(tab=>{document.getElementById('t-'+tab).classList.toggle('on',tab===t);document.getElementById('p-'+tab).classList.toggle('on',tab===t)});
-  if(t==='food'){renderFDB();renderLog()}if(t==='work')renderWork();if(t==='prog')renderProg();
+  TABS.forEach(tab=>{document.getElementById('t-'+tab).classList.toggle('on',tab===t);document.getElementById('p-'+tab).classList.toggle('on',tab===t)});
+  if(t==='food'){renderFDB();renderLog()}
+  if(t==='work')renderWork();
+  if(t==='prog')renderProg();
 }
 function clov(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open')}
 
-// TOAST
 let tt=null;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');if(tt)clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2500)}
 
