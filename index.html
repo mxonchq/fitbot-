@@ -258,6 +258,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
   .wgrid{grid-template-columns:repeat(6,1fr)}
 }
 </style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/react-body-highlighter@2.0.5/dist/index.umd.js"></script>
 </head>
 <body>
 
@@ -360,8 +363,37 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
 <div class="page" id="p-work">
   <div class="wscroll" id="wscroll"></div>
   <div class="wbanner"><div class="wbtype" id="wbtype">СЕГОДНЯ</div><div class="wbname" id="wbname">—</div><div class="wbsub" id="wbsub"></div></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+    <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Упражнений</div><div style="font-size:26px;font-weight:900;color:var(--text)" id="stat-ex">0</div></div>
+    <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Повторов</div><div style="font-size:26px;font-weight:900;color:var(--text)" id="stat-reps">0</div></div>
+    <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Тоннаж</div><div style="font-size:26px;font-weight:900;color:var(--text)" id="stat-vol">0<span style="font-size:11px;color:var(--text3)">кг</span></div></div>
+  </div>
+  <div class="card cp" style="margin-bottom:12px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Задействованные мышцы</div>
+    <div style="display:flex;justify-content:center;gap:8px" id="muscle-map-root">
+      <div id="muscle-front-react" style="text-align:center">
+        <div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СПЕРЕДИ</div>
+      </div>
+      <div id="muscle-back-react" style="text-align:center">
+        <div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СЗАДИ</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:8px;font-size:10px;font-weight:700;color:var(--text3)">
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:3px;background:#B6BDC3"></div>Не задействована</div>
+      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:3px;background:var(--red)"></div>Активна</div>
+    </div>
+  </div>
   <div id="exlist"></div>
-  <button class="btn btn-g" style="margin-top:4px" onclick="markDone()">
+  <div class="card cp" style="margin-top:8px">
+    <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Добавить подход</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="inp" id="ex-weight" type="number" step="0.5" placeholder="Вес кг" style="flex:1">
+      <span style="font-size:13px;color:var(--text3);font-weight:700;flex-shrink:0">×</span>
+      <input class="inp" id="ex-reps" type="number" placeholder="Повт" style="width:75px">
+      <button class="btn btn-r btn-sm" onclick="addVolume()">+</button>
+    </div>
+  </div>
+  <button class="btn btn-g" style="margin-top:8px" onclick="markDone()">
     <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Отметить выполненной
   </button>
 </div>
@@ -669,7 +701,7 @@ async function searchUSDA(q){
   res.style.display='block';loc.style.display='none';
   list.innerHTML='<div class="usda-loading">🔍 Ищем в базе USDA...</div>';
   try{
-    const r=await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(translateQuery(q))}&pageSize=10&dataType=SR%20Legacy,Survey%20(FNDDS)&api_key=${USDA_KEY}`);
+    const r=await fetch(`https://physique-bot.vercel.app/api/search?q=${encodeURIComponent(translateQuery(q))}`);
     const d=await r.json();
     list.innerHTML='';
     if(!d.foods||!d.foods.length){list.innerHTML='<div class="empty">Ничего не найдено</div>';return}
@@ -703,7 +735,7 @@ function renderWork(){
   const ws=document.getElementById('wscroll');
   if(ws){ws.innerHTML='';const data=gLS('phy5',{});
     for(let i=0;i<7;i++){const diff=i-WDAY;const dt=new Date();dt.setDate(dt.getDate()+diff);const ds=dt.toISOString().slice(0,10);const isDone=(data[ds]||{}).workoutDone;const isA=i===vwday;const btn=document.createElement('div');btn.className='wday'+(isA?' active':'')+(isDone&&!isA?' done':'');btn.innerHTML=`<div class="wdname">${DR[i]}</div><div class="wdico">${isDone?'✅':DI[i]}</div>`;const wd=i;btn.onclick=()=>{vwday=wd;renderWork()};ws.appendChild(btn);}}
-  se('wbname',WN[vwday]);se('wbtype',WT[vwday].toUpperCase());se('wbsub',DR[vwday]+(vwday===WDAY?' · Сегодня':''));
+  se('wbname',WN[vwday]);se('wbtype',WT[vwday].toUpperCase());se('wbsub',DR[vwday]+(vwday===WDAY?' · Сегодня':''));setTimeout(updateMuscleMap,50);
   const el=document.getElementById('exlist');if(!el)return;
   const exs=WK[vwday]||[];const day=gDay();const done=(day.exDone||{});
   el.innerHTML='';
@@ -738,7 +770,7 @@ function savPgW(){const v=parseFloat(document.getElementById('pgwi').value);if(!
 function savS(){const v=parseInt(document.getElementById('sinp').value);if(!v)return;const d=gDay();d.steps=v;sDay(TODAY,d);document.getElementById('sinp').value='';render();toast('👟 '+v.toLocaleString('ru')+' шагов')}
 function savWaist(){const v=parseFloat(document.getElementById('pgwaisinp').value);if(!v)return;const d=gDay();d.waist=v;sDay(TODAY,d);document.getElementById('pgwaisinp').value='';render();toast('📏 Талия '+v+' см')}
 function rmFood(i){const d=gDay();d.food=d.food||[];d.food.splice(i,1);sDay(TODAY,d);render();toast('Удалено')}
-function togEx(wd,i){const d=gDay();d.exDone=d.exDone||{};const k=`${wd}_${i}`;d.exDone[k]=!d.exDone[k];sDay(TODAY,d);renderWork();if(d.exDone[k])toast('✅ Упражнение!')}
+function togEx(wd,i){const d=gDay();d.exDone=d.exDone||{};const k=`${wd}_${i}`;d.exDone[k]=!d.exDone[k];sDay(TODAY,d);renderWork();updateMuscleMap();if(d.exDone[k])toast('✅ Упражнение!')}
 function markDone(){const d=gDay();d.workoutDone=true;const exs=WK[vwday]||[];d.exDone=d.exDone||{};exs.forEach((_,i)=>d.exDone[`${vwday}_${i}`]=true);sDay(TODAY,d);renderWork();render();toast('🔥 Тренировка выполнена!')}
 
 // FOOD MODAL
@@ -774,6 +806,113 @@ function savCF(){
   sDay(TODAY,d);document.getElementById('cfmod').classList.remove('open');
   ['cfn','cfk','cfp','cff','cfc','cfg'].forEach(id=>document.getElementById(id).value='');
   render();toast('✅ '+n+' добавлен!');
+}
+
+
+// ═══════════════════════════════════════
+// MUSCLE MAP (react-body-highlighter)
+// ═══════════════════════════════════════
+const EX_MUSCLES = {
+  0: {0:['chest','triceps','front-deltoids'],1:['upper-back','lower-back','biceps','back-deltoids'],2:['front-deltoids','triceps','trapezius'],3:['chest','triceps','front-deltoids'],4:['biceps'],5:['triceps'],6:['front-deltoids','back-deltoids']},
+  1: {0:['quadriceps','gluteal'],1:['hamstring','gluteal','lower-back'],2:['quadriceps','gluteal','adductor'],3:['gluteal','hamstring'],4:['calves'],5:['abs'],6:['abs','obliques']},
+  2: {0:['calves','hamstring'],1:['calves','quadriceps']},
+  3: {0:['chest','triceps','front-deltoids'],1:['upper-back','lower-back','biceps','back-deltoids'],2:['chest','triceps'],3:['front-deltoids','triceps'],4:['chest','upper-back'],5:['biceps'],6:['triceps'],7:['back-deltoids']},
+  4: {0:['lower-back','gluteal','hamstring','trapezius','upper-back'],1:['quadriceps','gluteal'],2:['quadriceps','gluteal','adductor'],3:['lower-back','hamstring'],4:['gluteal','hamstring'],5:['abs','obliques'],6:['abs','obliques']},
+  5: {0:['calves','hamstring','quadriceps']},
+};
+
+let muscleRootsReady = false;
+
+function renderMuscleMap(activeMuscles) {
+  if (typeof ReactBodyHighlighter === 'undefined' || typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
+    return;
+  }
+  
+  const Model = ReactBodyHighlighter.default || ReactBodyHighlighter;
+  
+  // Count frequency per muscle
+  const freq = {};
+  activeMuscles.forEach(m => { freq[m] = (freq[m]||0)+1; });
+  
+  const data = Object.entries(freq).map(([muscle, frequency]) => ({
+    name: muscle,
+    muscles: [muscle],
+    frequency
+  }));
+
+  // Front
+  const frontEl = document.getElementById('muscle-front-react');
+  if (frontEl) {
+    const frontRoot = frontEl._reactRoot || (frontEl._reactRoot = ReactDOM.createRoot(frontEl));
+    frontRoot.render(
+      React.createElement('div', null,
+        React.createElement('div', {style:{fontSize:'9px',fontWeight:700,color:'#a0a0a0',marginBottom:'4px',letterSpacing:'1px',textAlign:'center'}}, 'СПЕРЕДИ'),
+        React.createElement(Model, {
+          data,
+          style: {width:'110px'},
+          highlightedColors: ['#e8193c', '#ff2d4e'],
+          bodyColor: '#e0dfda',
+          type: 'anterior'
+        })
+      )
+    );
+  }
+
+  // Back  
+  const backEl = document.getElementById('muscle-back-react');
+  if (backEl) {
+    const backRoot = backEl._reactRoot || (backEl._reactRoot = ReactDOM.createRoot(backEl));
+    backRoot.render(
+      React.createElement('div', null,
+        React.createElement('div', {style:{fontSize:'9px',fontWeight:700,color:'#a0a0a0',marginBottom:'4px',letterSpacing:'1px',textAlign:'center'}}, 'СЗАДИ'),
+        React.createElement(Model, {
+          data,
+          style: {width:'110px'},
+          highlightedColors: ['#e8193c', '#ff2d4e'],
+          bodyColor: '#e0dfda',
+          type: 'posterior'
+        })
+      )
+    );
+  }
+}
+
+function updateMuscleMap(){
+  const day=gDay();const done=day.exDone||{};
+  const muscles=EX_MUSCLES[vwday]||{};
+  const activated=[];
+  Object.entries(done).forEach(([key,val])=>{
+    if(!val)return;
+    const parts=key.split('_');
+    const wd=parseInt(parts[0]),idx=parseInt(parts[1]);
+    if(wd!==vwday)return;
+    const mlist=muscles[idx]||[];
+    mlist.forEach(m=>activated.push(m));
+  });
+  
+  renderMuscleMap(activated);
+  
+  // Update stats
+  const doneCount=Object.entries(done).filter(([k,v])=>v&&k.startsWith(vwday+'_')).length;
+  const se2=(id,v)=>{const e=document.getElementById(id);if(e)e.innerHTML=v};
+  se2('stat-ex',doneCount);
+  se2('stat-reps',day.totalReps||0);
+  const vol=day.totalVol||0;
+  se2('stat-vol',vol>0?vol+'<span style="font-size:11px;color:var(--text3)">кг</span>':0);
+}
+
+function addVolume(){
+  const w=parseFloat(document.getElementById('ex-weight').value)||0;
+  const r=parseInt(document.getElementById('ex-reps').value)||0;
+  if(!w&&!r){toast('Введи вес и повторы');return}
+  const d=gDay();
+  d.totalVol=(d.totalVol||0)+Math.round(w*r);
+  d.totalReps=(d.totalReps||0)+r;
+  sDay(TODAY,d);
+  document.getElementById('ex-weight').value='';
+  document.getElementById('ex-reps').value='';
+  updateMuscleMap();
+  toast('✅ +'+Math.round(w*r)+' кг тоннажа');
 }
 
 // NAV
