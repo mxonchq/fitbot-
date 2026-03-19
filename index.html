@@ -361,41 +361,62 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
 
 <!-- WORKOUT -->
 <div class="page" id="p-work">
-  <div class="wscroll" id="wscroll"></div>
-  <div class="wbanner"><div class="wbtype" id="wbtype">СЕГОДНЯ</div><div class="wbname" id="wbname">—</div><div class="wbsub" id="wbsub"></div></div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
-    <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Упражнений</div><div style="font-size:26px;font-weight:900;color:var(--text)" id="stat-ex">0</div></div>
-    <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Повторов</div><div style="font-size:26px;font-weight:900;color:var(--text)" id="stat-reps">0</div></div>
-    <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Тоннаж</div><div style="font-size:26px;font-weight:900;color:var(--text)" id="stat-vol">0<span style="font-size:11px;color:var(--text3)">кг</span></div></div>
+  <!-- PROGRAMS LIST -->
+  <div id="wk-programs">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:22px;font-weight:900;letter-spacing:-.5px">Тренировки</div>
+    </div>
+    <!-- Program cards rendered by JS -->
+    <div id="program-list"></div>
   </div>
-  <div class="card cp" style="margin-bottom:12px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Задействованные мышцы</div>
-    <div style="display:flex;justify-content:center;gap:8px" id="muscle-map-root">
-      <div id="muscle-front-react" style="text-align:center">
-        <div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СПЕРЕДИ</div>
+
+  <!-- ACTIVE WORKOUT (hidden by default) -->
+  <div id="wk-active" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <button onclick="cancelWorkout()" style="background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:8px 14px;font-family:var(--f);font-size:13px;font-weight:700;color:var(--text);cursor:pointer">✕ Отмена</button>
+      <div style="font-size:16px;font-weight:800" id="wk-timer-display">00:00</div>
+      <button onclick="finishWorkout()" style="background:var(--red);border:none;border-radius:9px;padding:8px 16px;font-family:var(--f);font-size:13px;font-weight:700;color:white;cursor:pointer">Завершить</button>
+    </div>
+    <div id="wk-active-name" style="font-size:20px;font-weight:900;margin-bottom:16px;letter-spacing:-.3px"></div>
+    <div id="wk-exercises-list"></div>
+    <button class="btn btn-g" onclick="finishWorkout()" style="margin-top:8px">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      Завершить тренировку
+    </button>
+  </div>
+
+  <!-- REST TIMER OVERLAY -->
+  <div id="rest-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:150;flex-direction:column;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
+    <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px">ОТДЫХ</div>
+    <div id="rest-num" style="font-size:96px;font-weight:900;color:white;line-height:1;letter-spacing:-4px">60</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:8px">секунд</div>
+    <button onclick="skipRest()" style="margin-top:32px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:12px 32px;font-family:var(--f);font-size:14px;font-weight:700;color:white;cursor:pointer">Пропустить →</button>
+  </div>
+
+  <!-- WORKOUT SUMMARY (hidden) -->
+  <div id="wk-summary" style="display:none">
+    <div style="font-size:22px;font-weight:900;margin-bottom:4px">🔥 Тренировка завершена!</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:16px" id="sum-date"></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Время</div><div style="font-size:20px;font-weight:900" id="sum-time">0:00</div></div>
+      <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Тоннаж</div><div style="font-size:20px;font-weight:900" id="sum-vol">0кг</div></div>
+      <div class="card cp" style="text-align:center;padding:12px 8px"><div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Подходов</div><div style="font-size:20px;font-weight:900" id="sum-sets">0</div></div>
+    </div>
+    <!-- Muscle map summary -->
+    <div class="card cp" style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Задействованные мышцы</div>
+      <div style="display:flex;justify-content:center;gap:16px">
+        <div id="sum-front" style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СПЕРЕДИ</div></div>
+        <div id="sum-back" style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СЗАДИ</div></div>
       </div>
-      <div id="muscle-back-react" style="text-align:center">
-        <div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СЗАДИ</div>
-      </div>
     </div>
-    <div style="display:flex;gap:12px;margin-top:8px;font-size:10px;font-weight:700;color:var(--text3)">
-      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:3px;background:#B6BDC3"></div>Не задействована</div>
-      <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:3px;background:var(--red)"></div>Активна</div>
+    <!-- Exercise summary -->
+    <div class="card cp" style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Упражнения</div>
+      <div id="sum-exercises"></div>
     </div>
+    <button class="btn btn-r" onclick="backToPrograms()">Готово</button>
   </div>
-  <div id="exlist"></div>
-  <div class="card cp" style="margin-top:8px">
-    <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Добавить подход</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input class="inp" id="ex-weight" type="number" step="0.5" placeholder="Вес кг" style="flex:1">
-      <span style="font-size:13px;color:var(--text3);font-weight:700;flex-shrink:0">×</span>
-      <input class="inp" id="ex-reps" type="number" placeholder="Повт" style="width:75px">
-      <button class="btn btn-r btn-sm" onclick="addVolume()">+</button>
-    </div>
-  </div>
-  <button class="btn btn-g" style="margin-top:8px" onclick="markDone()">
-    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Отметить выполненной
-  </button>
 </div>
 
 <!-- WATER -->
@@ -810,117 +831,393 @@ function savCF(){
 
 
 // ═══════════════════════════════════════
-// MUSCLE MAP (react-body-highlighter)
+// WORKOUT PROGRAMS & ACTIVE SESSION
 // ═══════════════════════════════════════
-const EX_MUSCLES = {
-  0: {0:['chest','triceps','front-deltoids'],1:['upper-back','lower-back','biceps','back-deltoids'],2:['front-deltoids','triceps','trapezius'],3:['chest','triceps','front-deltoids'],4:['biceps'],5:['triceps'],6:['front-deltoids','back-deltoids']},
-  1: {0:['quadriceps','gluteal'],1:['hamstring','gluteal','lower-back'],2:['quadriceps','gluteal','adductor'],3:['gluteal','hamstring'],4:['calves'],5:['abs'],6:['abs','obliques']},
-  2: {0:['calves','hamstring'],1:['calves','quadriceps']},
-  3: {0:['chest','triceps','front-deltoids'],1:['upper-back','lower-back','biceps','back-deltoids'],2:['chest','triceps'],3:['front-deltoids','triceps'],4:['chest','upper-back'],5:['biceps'],6:['triceps'],7:['back-deltoids']},
-  4: {0:['lower-back','gluteal','hamstring','trapezius','upper-back'],1:['quadriceps','gluteal'],2:['quadriceps','gluteal','adductor'],3:['lower-back','hamstring'],4:['gluteal','hamstring'],5:['abs','obliques'],6:['abs','obliques']},
-  5: {0:['calves','hamstring','quadriceps']},
+
+const MUSCLE_MAP = {
+  'chest':['chest'],'triceps':['triceps'],'front-deltoids':['front-deltoids'],
+  'upper-back':['upper-back'],'lower-back':['lower-back'],'biceps':['biceps'],
+  'back-deltoids':['back-deltoids'],'trapezius':['trapezius'],
+  'abs':['abs'],'obliques':['obliques'],
+  'quadriceps':['quadriceps'],'gluteal':['gluteal'],
+  'hamstring':['hamstring'],'calves':['calves'],
+  'adductor':['adductor'],'abductors':['abductors'],
 };
 
-let muscleRootsReady = false;
+const PROGRAMS = [
+  {
+    id:'upperA', name:'Верх А', day:0,
+    exercises:[
+      {name:'Жим штанги с пола', muscles:['chest','triceps','front-deltoids'], defaultSets:4, defaultReps:8, defaultWeight:20},
+      {name:'Тяга штанги в наклоне', muscles:['upper-back','lower-back','biceps','back-deltoids'], defaultSets:4, defaultReps:10, defaultWeight:20},
+      {name:'Жим штанги стоя', muscles:['front-deltoids','triceps','trapezius'], defaultSets:3, defaultReps:8, defaultWeight:15},
+      {name:'Отжимания на упорах', muscles:['chest','triceps'], defaultSets:3, defaultReps:12, defaultWeight:0},
+      {name:'Сгибание рук EZ-гриф', muscles:['biceps'], defaultSets:3, defaultReps:10, defaultWeight:15},
+      {name:'Французский жим', muscles:['triceps'], defaultSets:3, defaultReps:12, defaultWeight:10},
+      {name:'Подъёмы в стороны', muscles:['front-deltoids','back-deltoids'], defaultSets:3, defaultReps:15, defaultWeight:4},
+    ]
+  },
+  {
+    id:'lowerA', name:'Низ А', day:1,
+    exercises:[
+      {name:'Зерчер-присед', muscles:['quadriceps','gluteal'], defaultSets:4, defaultReps:8, defaultWeight:30},
+      {name:'Румынская тяга', muscles:['hamstring','gluteal','lower-back'], defaultSets:4, defaultReps:10, defaultWeight:30},
+      {name:'Болгарские выпады', muscles:['quadriceps','gluteal','adductor'], defaultSets:3, defaultReps:10, defaultWeight:15},
+      {name:'Ягодичный мост со штангой', muscles:['gluteal','hamstring'], defaultSets:3, defaultReps:12, defaultWeight:20},
+      {name:'Подъёмы на икры', muscles:['calves'], defaultSets:4, defaultReps:20, defaultWeight:0},
+      {name:'Планка', muscles:['abs'], defaultSets:3, defaultReps:45, defaultWeight:0, isTime:true},
+      {name:'Обратные скручивания', muscles:['abs','obliques'], defaultSets:3, defaultReps:15, defaultWeight:0},
+    ]
+  },
+  {
+    id:'upperB', name:'Верх Б', day:3,
+    exercises:[
+      {name:'Отжимания с рюкзаком', muscles:['chest','triceps'], defaultSets:4, defaultReps:10, defaultWeight:10},
+      {name:'Тяга штанги (тяжёлая)', muscles:['upper-back','lower-back','biceps','back-deltoids'], defaultSets:4, defaultReps:8, defaultWeight:25},
+      {name:'Жим с пола с паузой', muscles:['chest','front-deltoids','triceps'], defaultSets:3, defaultReps:10, defaultWeight:20},
+      {name:'Жим стоя (лёгкий)', muscles:['front-deltoids','triceps'], defaultSets:3, defaultReps:12, defaultWeight:12},
+      {name:'Пуловер', muscles:['chest','upper-back'], defaultSets:3, defaultReps:12, defaultWeight:10},
+      {name:'Сгибание рук EZ', muscles:['biceps'], defaultSets:3, defaultReps:12, defaultWeight:12},
+      {name:'Трицепс над головой', muscles:['triceps'], defaultSets:3, defaultReps:12, defaultWeight:8},
+      {name:'Задняя дельта', muscles:['back-deltoids'], defaultSets:3, defaultReps:15, defaultWeight:4},
+    ]
+  },
+  {
+    id:'lowerB', name:'Низ Б', day:4,
+    exercises:[
+      {name:'Тяга классическая', muscles:['lower-back','gluteal','hamstring','trapezius','upper-back'], defaultSets:4, defaultReps:6, defaultWeight:40},
+      {name:'Зерчер-присед (средний)', muscles:['quadriceps','gluteal'], defaultSets:3, defaultReps:10, defaultWeight:25},
+      {name:'Выпады назад', muscles:['quadriceps','gluteal','adductor'], defaultSets:3, defaultReps:10, defaultWeight:15},
+      {name:'Good morning', muscles:['lower-back','hamstring'], defaultSets:3, defaultReps:12, defaultWeight:15},
+      {name:'Одноногий ягодичный мост', muscles:['gluteal','hamstring'], defaultSets:3, defaultReps:12, defaultWeight:0},
+      {name:'Скручивания с блином', muscles:['abs','obliques'], defaultSets:3, defaultReps:15, defaultWeight:5},
+      {name:'Боковая планка', muscles:['abs','obliques'], defaultSets:3, defaultReps:40, defaultWeight:0, isTime:true},
+    ]
+  },
+];
 
-function renderMuscleMap(activeMuscles) {
-  if (typeof ReactBodyHighlighter === 'undefined' || typeof React === 'undefined' || typeof ReactDOM === 'undefined') {
-    return;
-  }
-  
-  const Model = ReactBodyHighlighter.default || ReactBodyHighlighter;
-  
-  // Count frequency per muscle
-  const freq = {};
-  activeMuscles.forEach(m => { freq[m] = (freq[m]||0)+1; });
-  
-  const data = Object.entries(freq).map(([muscle, frequency]) => ({
-    name: muscle,
-    muscles: [muscle],
-    frequency
-  }));
+// State
+let activeProgram = null;
+let activeSets = {}; // {exIdx: [{weight, reps, done}]}
+let workoutStartTime = null;
+let workoutTimerInterval = null;
+let restTimerInterval = null;
+let workoutSummaryData = null;
 
-  // Front
-  const frontEl = document.getElementById('muscle-front-react');
-  if (frontEl) {
-    const frontRoot = frontEl._reactRoot || (frontEl._reactRoot = ReactDOM.createRoot(frontEl));
-    frontRoot.render(
-      React.createElement('div', null,
-        React.createElement('div', {style:{fontSize:'9px',fontWeight:700,color:'#a0a0a0',marginBottom:'4px',letterSpacing:'1px',textAlign:'center'}}, 'СПЕРЕДИ'),
-        React.createElement(Model, {
-          data,
-          style: {width:'110px'},
-          highlightedColors: ['#e8193c', '#ff2d4e'],
-          bodyColor: '#e0dfda',
-          type: 'anterior'
-        })
-      )
-    );
-  }
+function getWorkoutHistory() { return gLS('wk_history', []); }
+function saveWorkoutHistory(h) { sLS('wk_history', h); }
 
-  // Back  
-  const backEl = document.getElementById('muscle-back-react');
-  if (backEl) {
-    const backRoot = backEl._reactRoot || (backEl._reactRoot = ReactDOM.createRoot(backEl));
-    backRoot.render(
-      React.createElement('div', null,
-        React.createElement('div', {style:{fontSize:'9px',fontWeight:700,color:'#a0a0a0',marginBottom:'4px',letterSpacing:'1px',textAlign:'center'}}, 'СЗАДИ'),
-        React.createElement(Model, {
-          data,
-          style: {width:'110px'},
-          highlightedColors: ['#e8193c', '#ff2d4e'],
-          bodyColor: '#e0dfda',
-          type: 'posterior'
-        })
-      )
-    );
-  }
+function getSavedSets(programId) { return gLS('wk_sets_'+programId, null); }
+function saveSetsForProgram(programId, sets) { sLS('wk_sets_'+programId, sets); }
+
+// ── RENDER PROGRAMS LIST ─────────────────────────────────
+function renderPrograms() {
+  const list = document.getElementById('program-list');
+  if (!list) return;
+  list.innerHTML = '';
+  
+  PROGRAMS.forEach(prog => {
+    const savedSets = getSavedSets(prog.id);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '12px';
+    card.style.overflow = 'hidden';
+    
+    // Exercise icons row
+    const exIcons = prog.exercises.slice(0,5).map(ex => {
+      const emoji = getExerciseEmoji(ex.muscles[0]||'');
+      return `<div style="width:56px;height:56px;border-radius:12px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${emoji}</div>`;
+    }).join('');
+    
+    card.innerHTML = `
+      <div style="padding:16px 16px 12px">
+        <div style="font-size:17px;font-weight:800;letter-spacing:-.3px;margin-bottom:10px">${prog.name}</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;padding-bottom:2px">${exIcons}</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="startWorkout('${prog.id}')" style="flex:1;background:var(--red);border:none;border-radius:11px;padding:13px;font-family:var(--f);font-size:14px;font-weight:800;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(232,25,60,0.3)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Старт
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;font-weight:600">${prog.exercises.length} упражнений · ${prog.exercises.reduce((a,e)=>a+e.defaultSets,0)} подходов</div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
 }
 
-function updateMuscleMap(){
-  const day=gDay();const done=day.exDone||{};
-  const muscles=EX_MUSCLES[vwday]||{};
-  const activated=[];
-  Object.entries(done).forEach(([key,val])=>{
-    if(!val)return;
-    const parts=key.split('_');
-    const wd=parseInt(parts[0]),idx=parseInt(parts[1]);
-    if(wd!==vwday)return;
-    const mlist=muscles[idx]||[];
-    mlist.forEach(m=>activated.push(m));
+function getExerciseEmoji(muscle) {
+  const map = {'chest':'🏋️','triceps':'💪','front-deltoids':'🔺','upper-back':'🔙','lower-back':'🔙','biceps':'💪','back-deltoids':'🔻','trapezius':'⛰️','abs':'⬜','obliques':'⬜','quadriceps':'🦵','gluteal':'🍑','hamstring':'🦵','calves':'🦵','adductor':'🦵','abductors':'🦵'};
+  return map[muscle] || '🏋️';
+}
+
+// ── START WORKOUT ────────────────────────────────────────
+function startWorkout(programId) {
+  activeProgram = PROGRAMS.find(p => p.id === programId);
+  if (!activeProgram) return;
+
+  // Init sets from saved or defaults
+  activeSets = {};
+  const saved = getSavedSets(programId);
+  activeProgram.exercises.forEach((ex, i) => {
+    if (saved && saved[i]) {
+      activeSets[i] = saved[i].map(s => ({...s, done: false}));
+    } else {
+      activeSets[i] = Array.from({length: ex.defaultSets}, () => ({
+        weight: ex.defaultWeight, reps: ex.defaultReps, done: false
+      }));
+    }
+  });
+
+  workoutStartTime = Date.now();
+  workoutTimerInterval = setInterval(updateWorkoutTimer, 1000);
+
+  document.getElementById('wk-programs').style.display = 'none';
+  document.getElementById('wk-summary').style.display = 'none';
+  document.getElementById('wk-active').style.display = 'block';
+  document.getElementById('wk-active-name').textContent = activeProgram.name;
+
+  renderActiveWorkout();
+  toast('🚀 Тренировка началась!');
+}
+
+function updateWorkoutTimer() {
+  const el = document.getElementById('wk-timer-display');
+  if (!el || !workoutStartTime) return;
+  const sec = Math.floor((Date.now() - workoutStartTime) / 1000);
+  const m = Math.floor(sec / 60).toString().padStart(2,'0');
+  const s = (sec % 60).toString().padStart(2,'0');
+  el.textContent = m + ':' + s;
+}
+
+// ── RENDER ACTIVE WORKOUT ────────────────────────────────
+function renderActiveWorkout() {
+  const list = document.getElementById('wk-exercises-list');
+  if (!list || !activeProgram) return;
+  list.innerHTML = '';
+
+  activeProgram.exercises.forEach((ex, exIdx) => {
+    const sets = activeSets[exIdx] || [];
+    const allDone = sets.length > 0 && sets.every(s => s.done);
+    
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '10px';
+    card.style.overflow = 'visible';
+    if (allDone) card.style.background = 'var(--greenbg)';
+    
+    const setsHTML = sets.map((set, setIdx) => {
+      const doneStyle = set.done ? 
+        'background:var(--green);color:white;border-color:var(--green)' : 
+        'background:var(--bg3);color:var(--text);border-color:var(--border)';
+      return `
+        <div style="display:grid;grid-template-columns:32px 1fr 1fr 40px;gap:6px;align-items:center;margin-bottom:6px">
+          <div style="font-size:12px;font-weight:800;color:var(--text3);text-align:center">${setIdx+1}</div>
+          <input type="number" step="0.5" value="${set.weight}" 
+            onchange="updateSet(${exIdx},${setIdx},'weight',this.value)"
+            style="padding:10px;border-radius:9px;background:var(--bg3);border:1.5px solid var(--border);font-family:var(--f);font-size:15px;font-weight:800;text-align:center;color:var(--text);outline:none;width:100%">
+          <input type="number" value="${set.reps}"
+            onchange="updateSet(${exIdx},${setIdx},'reps',this.value)"
+            style="padding:10px;border-radius:9px;background:var(--bg3);border:1.5px solid var(--border);font-family:var(--f);font-size:15px;font-weight:800;text-align:center;color:var(--text);outline:none;width:100%">
+          <button onclick="toggleSet(${exIdx},${setIdx})" 
+            style="width:40px;height:40px;border-radius:9px;border:1.5px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;${doneStyle}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+        </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div style="padding:14px 14px 10px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:38px;height:38px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${getExerciseEmoji(ex.muscles[0])}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:800">${ex.name}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">${ex.muscles.join(', ')}</div>
+          </div>
+          ${allDone ? '<div style="color:var(--green);font-size:18px">✓</div>' : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:32px 1fr 1fr 40px;gap:6px;margin-bottom:6px">
+          <div></div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-align:center;text-transform:uppercase;letter-spacing:.5px">КГ</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-align:center;text-transform:uppercase;letter-spacing:.5px">${ex.isTime ? 'СЕК' : 'ПОВТ'}</div>
+          <div></div>
+        </div>
+        ${setsHTML}
+        <button onclick="addSet(${exIdx})" style="width:100%;padding:9px;border-radius:9px;background:transparent;border:1.5px dashed var(--border);font-family:var(--f);font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;margin-top:4px">+ Добавить подход</button>
+      </div>`;
+    list.appendChild(card);
   });
   
-  renderMuscleMap(activated);
-  
-  // Update stats
-  const doneCount=Object.entries(done).filter(([k,v])=>v&&k.startsWith(vwday+'_')).length;
-  const se2=(id,v)=>{const e=document.getElementById(id);if(e)e.innerHTML=v};
-  se2('stat-ex',doneCount);
-  se2('stat-reps',day.totalReps||0);
-  const vol=day.totalVol||0;
-  se2('stat-vol',vol>0?vol+'<span style="font-size:11px;color:var(--text3)">кг</span>':0);
+  // Save current sets
+  if (activeProgram) saveSetsForProgram(activeProgram.id, activeSets);
 }
 
-function addVolume(){
-  const w=parseFloat(document.getElementById('ex-weight').value)||0;
-  const r=parseInt(document.getElementById('ex-reps').value)||0;
-  if(!w&&!r){toast('Введи вес и повторы');return}
-  const d=gDay();
-  d.totalVol=(d.totalVol||0)+Math.round(w*r);
-  d.totalReps=(d.totalReps||0)+r;
-  sDay(TODAY,d);
-  document.getElementById('ex-weight').value='';
-  document.getElementById('ex-reps').value='';
-  updateMuscleMap();
-  toast('✅ +'+Math.round(w*r)+' кг тоннажа');
+function updateSet(exIdx, setIdx, field, value) {
+  if (!activeSets[exIdx]) return;
+  activeSets[exIdx][setIdx][field] = parseFloat(value) || 0;
+  if (activeProgram) saveSetsForProgram(activeProgram.id, activeSets);
 }
+
+function addSet(exIdx) {
+  const ex = activeProgram?.exercises[exIdx];
+  if (!ex) return;
+  const prev = activeSets[exIdx];
+  const last = prev[prev.length - 1] || {weight: ex.defaultWeight, reps: ex.defaultReps};
+  activeSets[exIdx].push({weight: last.weight, reps: last.reps, done: false});
+  renderActiveWorkout();
+}
+
+function toggleSet(exIdx, setIdx) {
+  const set = activeSets[exIdx]?.[setIdx];
+  if (!set) return;
+  set.done = !set.done;
+  if (set.done) startRestTimer(60);
+  renderActiveWorkout();
+}
+
+// ── REST TIMER ───────────────────────────────────────────
+let restSeconds = 0;
+function startRestTimer(seconds) {
+  restSeconds = seconds;
+  const overlay = document.getElementById('rest-overlay');
+  overlay.style.display = 'flex';
+  document.getElementById('rest-num').textContent = restSeconds;
+  clearInterval(restTimerInterval);
+  restTimerInterval = setInterval(() => {
+    restSeconds--;
+    const el = document.getElementById('rest-num');
+    if (el) el.textContent = restSeconds;
+    if (restSeconds <= 0) skipRest();
+  }, 1000);
+}
+function skipRest() {
+  clearInterval(restTimerInterval);
+  const overlay = document.getElementById('rest-overlay');
+  overlay.style.display = 'none';
+}
+
+// ── FINISH WORKOUT ───────────────────────────────────────
+function cancelWorkout() {
+  if (!confirm('Отменить тренировку?')) return;
+  clearInterval(workoutTimerInterval);
+  clearInterval(restTimerInterval);
+  document.getElementById('rest-overlay').style.display = 'none';
+  activeProgram = null;
+  document.getElementById('wk-active').style.display = 'none';
+  document.getElementById('wk-programs').style.display = 'block';
+}
+
+function finishWorkout() {
+  if (!activeProgram) return;
+  clearInterval(workoutTimerInterval);
+  clearInterval(restTimerInterval);
+  document.getElementById('rest-overlay').style.display = 'none';
+
+  // Calculate stats
+  let totalVol = 0, totalSets = 0, allMuscles = [];
+  activeProgram.exercises.forEach((ex, i) => {
+    const sets = activeSets[i] || [];
+    sets.filter(s => s.done).forEach(s => {
+      totalVol += s.weight * s.reps;
+      totalSets++;
+    });
+    sets.filter(s => s.done).length > 0 && ex.muscles.forEach(m => allMuscles.push(m));
+  });
+
+  const durationSec = Math.floor((Date.now() - workoutStartTime) / 1000);
+  const durationStr = Math.floor(durationSec/60) + ':' + String(durationSec%60).padStart(2,'0');
+
+  // Save to history
+  const hist = getWorkoutHistory();
+  hist.unshift({
+    date: TODAY, programName: activeProgram.name,
+    duration: durationStr, volume: totalVol, sets: totalSets,
+    muscles: [...new Set(allMuscles)]
+  });
+  saveWorkoutHistory(hist.slice(0, 50));
+
+  // Also save to day data
+  const day = gDay();
+  day.workoutDone = true;
+  day.totalVol = totalVol;
+  day.totalReps = totalSets;
+  sDay(TODAY, day);
+
+  workoutSummaryData = { muscles: [...new Set(allMuscles)], vol: totalVol, sets: totalSets, duration: durationStr };
+  showSummary();
+}
+
+function showSummary() {
+  if (!workoutSummaryData || !activeProgram) return;
+  document.getElementById('wk-active').style.display = 'none';
+  document.getElementById('wk-summary').style.display = 'block';
+
+  const now = new Date();
+  document.getElementById('sum-date').textContent = now.toLocaleDateString('ru', {day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('sum-time').textContent = workoutSummaryData.duration;
+  document.getElementById('sum-vol').textContent = Math.round(workoutSummaryData.vol) + 'кг';
+  document.getElementById('sum-sets').textContent = workoutSummaryData.sets;
+
+  // Render muscle map in summary
+  renderMuscleMapInEl('sum-front', 'sum-back', workoutSummaryData.muscles);
+
+  // Exercise list summary
+  const sumEx = document.getElementById('sum-exercises');
+  if (sumEx && activeProgram) {
+    sumEx.innerHTML = activeProgram.exercises.map((ex, i) => {
+      const sets = (activeSets[i] || []).filter(s => s.done);
+      if (!sets.length) return '';
+      const setsStr = sets.map((s,si) => `<span style="font-size:11px;color:var(--text3);margin-right:8px">${si+1} &nbsp;${s.weight}кг×${s.reps}</span>`).join('');
+      return `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px">${ex.name}</div>
+        <div>${setsStr}</div>
+      </div>`;
+    }).filter(Boolean).join('');
+  }
+
+  activeProgram = null;
+  render();
+}
+
+function backToPrograms() {
+  document.getElementById('wk-summary').style.display = 'none';
+  document.getElementById('wk-programs').style.display = 'block';
+  renderPrograms();
+}
+
+// ── MUSCLE MAP RENDERER ──────────────────────────────────
+function renderMuscleMapInEl(frontId, backId, muscles) {
+  if (typeof ReactBodyHighlighter === 'undefined') return;
+  const Model = ReactBodyHighlighter.default || ReactBodyHighlighter;
+  const freq = {};
+  muscles.forEach(m => { freq[m] = (freq[m]||0)+1; });
+  const data = Object.entries(freq).map(([muscle,frequency]) => ({name:muscle,muscles:[muscle],frequency}));
+
+  ['front','back'].forEach(type => {
+    const elId = type === 'front' ? frontId : backId;
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const root = el._reactRoot || (el._reactRoot = ReactDOM.createRoot(el));
+    root.render(React.createElement('div', null,
+      React.createElement('div', {style:{fontSize:'9px',fontWeight:700,color:'#a0a0a0',marginBottom:'4px',textAlign:'center',letterSpacing:'1px'}}, type === 'front' ? 'СПЕРЕДИ' : 'СЗАДИ'),
+      React.createElement(Model, {data, style:{width:'110px'}, highlightedColors:['#e8193c','#ff2d4e'], bodyColor:'#e0dfda', type: type === 'front' ? 'anterior' : 'posterior'})
+    ));
+  });
+}
+
+// Keep old updateMuscleMap / addVolume / renderWork for compatibility
+function renderWork() { renderPrograms(); }
+function updateMuscleMap() {}
+function togEx() {}
+function markDone() {}
+function addVolume() {}
 
 // NAV
 const TABS=['dash','food','work','watr','prog'];
 function go(t){
   TABS.forEach(tab=>{document.getElementById('t-'+tab).classList.toggle('on',tab===t);document.getElementById('p-'+tab).classList.toggle('on',tab===t)});
   if(t==='food'){renderFDB();renderLog()}
-  if(t==='work')renderWork();
+  if(t==='work'){document.getElementById('wk-programs').style.display='block';document.getElementById('wk-active').style.display='none';document.getElementById('wk-summary').style.display='none';renderPrograms();}
   if(t==='prog')renderProg();
 }
 function clov(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.remove('open')}
