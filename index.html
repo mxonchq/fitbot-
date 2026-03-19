@@ -1086,7 +1086,7 @@ function renderActiveWorkout() {
 
     card.innerHTML = `
       <div style="padding:14px 14px 10px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="openExerciseDetail(${exIdx}, ${JSON.stringify(vwday)})">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="openExerciseDetail(${exIdx},${vwday})">
           <div style="width:38px;height:38px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px">${getExerciseEmoji(ex.muscles[0])}</div>
           <div style="flex:1">
             <div style="font-size:14px;font-weight:800">${ex.name} <span style="font-size:10px;color:var(--red);font-weight:700">▶ гифка</span></div>
@@ -1259,185 +1259,107 @@ function addVolume() {}
 // EXERCISE DETAIL (GIF + INFO)
 // ═══════════════════════════════════════
 
-// YouTube video IDs for each exercise (free, unlimited, no API key)
-const EX_VIDEOS = {
-  'Жим штанги с пола':            {yt:'jnAhfRTJCok', tips:['Локти под углом 45°','Пауза внизу обязательна','Лопатки сведены и прижаты']},
-  'Тяга штанги в наклоне':        {yt:'FWJR5Ve8bnQ', tips:['Корпус 45° к полу','Тяни к поясу, не к груди','Не округляй спину']},
-  'Жим штанги стоя':              {yt:'2yjwXTZQDDI', tips:['Ноги на ширине плеч','Пресс напряжён','Не отклоняйся назад']},
-  'Отжимания на упорах':          {yt:'IODxDxX7oi4', tips:['Ладони чуть шире плеч','Локти назад, не в стороны','Полная амплитуда']},
-  'Сгибание рук EZ-гриф':         {yt:'av7-8igSXTs', tips:['Локти прижаты к телу','Не раскачивайся','Полное разгибание внизу']},
-  'Французский жим':              {yt:'d_KZxkY_0cM', tips:['Локти смотрят в потолок','Штанга за голову, не на лоб','Медленно опускай']},
-  'Подъёмы в стороны':            {yt:'3VcKaXpzqRo', tips:['Лёгкий наклон вперёд','Руки чуть согнуты','Не выше плеч']},
-  'Зерчер-присед':                {yt:'7gkHDmCNPq8', tips:['Штанга в сгибе локтей','Спина прямая','Колени над носками']},
-  'Румынская тяга':               {yt:'JCXUYuzwNrM', tips:['Штанга вдоль ног','Сгиб в бёдрах, не в пояснице','Чувствуй растяжение бицепса бедра']},
-  'Болгарские выпады':            {yt:'2C-uNgKwPLE', tips:['Задняя нога на скамье','Корпус прямой','Переднее колено над ступнёй']},
-  'Ягодичный мост со штангой':    {yt:'LM8XHLYJoYs', tips:['Штанга на бёдрах','Сожми ягодицы вверху','Подбородок к груди']},
-  'Подъёмы на икры':              {yt:'-M4-G8p1fCI', tips:['Полная амплитуда вверх и вниз','Не пружинь','Медленное опускание']},
-  'Планка':                       {yt:'ASdvN_XEl_c', tips:['Тело одна прямая линия','Пресс и ягодицы напряжены','Не задирай таз']},
-  'Обратные скручивания':         {yt:'hyv14_KQgAg', tips:['Поясница прижата к полу','Поднимай таз вверх','Медленно опускай ноги']},
-  'Отжимания с рюкзаком':         {yt:'IODxDxX7oi4', tips:['Рюкзак с блинами для веса','Техника как обычные отжимания','Прогрессия веса']},
-  'Тяга штанги (тяжёлая)':        {yt:'FWJR5Ve8bnQ', tips:['Тяжёлый вес 6-10 повторений','Акцент на широчайшие','Полная амплитуда']},
-  'Жим с пола с паузой':          {yt:'jnAhfRTJCok', tips:['1 секунда паузы на полу','Взрывное движение вверх','Контролируй опускание']},
-  'Жим стоя (лёгкий)':            {yt:'2yjwXTZQDDI', tips:['Лёгкий вес — больше повторов','Контроль движения','Акцент на дельты']},
-  'Пуловер':                      {yt:'FK4rHfX-wAE', tips:['Широкий хват','Прямые руки','Чувствуй грудь и широчайшие']},
-  'Сгибание рук EZ':              {yt:'av7-8igSXTs', tips:['Полный диапазон','Пик — сожми бицепс','Медленно вниз']},
-  'Трицепс над головой':          {yt:'_gsUck-7f74', tips:['Локти смотрят вперёд','Полное разгибание','Медленно опускай']},
-  'Задняя дельта':                {yt:'EA7u4Q_8HQ0', tips:['Лёгкий наклон вперёд','Руки в стороны-назад','Сжимай лопатки']},
-  'Тяга классическая':            {yt:'op9kVnSso6Q', tips:['Гриф над серединой стопы','Нейтральная спина','Толкай пол от себя']},
-  'Зерчер-присед (средний)':      {yt:'7gkHDmCNPq8', tips:['Средний вес — чистая техника','10-12 повторений','Контроль движения']},
-  'Выпады назад':                 {yt:'D7KaRcUTQeE', tips:['Шаг назад','Колено не касается пола','Отталкивайся передней ногой']},
-  'Good morning':                 {yt:'YA-h3n9L4Ko', tips:['Лёгкий вес!','Сгиб в бёдрах','Спина нейтральная']},
-  'Одноногий ягодичный мост':     {yt:'Ts9f0LkEBQo', tips:['Одна нога на весу','Сожми ягодицу вверху','Не скручивайся в тазу']},
-  'Скручивания с блином':         {yt:'blNkUDWGJ4o', tips:['Блин у груди','Не тяни за шею','Выдох при подъёме']},
-  'Боковая планка':               {yt:'K2eClOoQFzA', tips:['Тело прямая линия','Таз не провисает','Дыши равномерно']},
-  'Дорожка — ходьба/бег':         {yt:'_kGeLutilized', tips:['Темп 5-6 км/ч','Можно говорить — нельзя петь','35-45 минут']},
-  'Дорожка или прогулка':         {yt:'VHrdHkqNoUY', tips:['40-60 минут','Умеренный темп','Считай шаги']},
+// Exercise data - YouTube links + wger.de images (free, no key needed)
+const EX_DATA = {
+  'Жим штанги с пола':         {yt:'jnAhfRTJCok', wger:1346, tips:['Локти 45° от тела','Пауза на полу обязательна','Лопатки сведены']},
+  'Тяга штанги в наклоне':     {yt:'FWJR5Ve8bnQ', wger:63,   tips:['Корпус 45° к полу','Тяни к поясу','Не округляй спину']},
+  'Жим штанги стоя':           {yt:'2yjwXTZQDDI', wger:200,  tips:['Ноги на ширине плеч','Пресс напряжён','Не отклоняйся назад']},
+  'Отжимания на упорах':       {yt:'IODxDxX7oi4', wger:10,   tips:['Локти назад, не в стороны','Полная амплитуда','Тело прямое']},
+  'Сгибание рук EZ-гриф':      {yt:'av7-8igSXTs', wger:5,    tips:['Локти прижаты к телу','Не раскачивайся','Полное разгибание внизу']},
+  'Французский жим':           {yt:'d_KZxkY_0cM', wger:21,   tips:['Локти в потолок','Штанга за голову','Медленно опускай']},
+  'Подъёмы в стороны':         {yt:'3VcKaXpzqRo', wger:246,  tips:['Лёгкий наклон вперёд','Руки чуть согнуты','Не выше плеч']},
+  'Зерчер-присед':             {yt:'7gkHDmCNPq8', wger:null, tips:['Штанга в сгибе локтей','Спина прямая','Колени над носками']},
+  'Румынская тяга':            {yt:'JCXUYuzwNrM', wger:69,   tips:['Штанга вдоль ног','Сгиб в бёдрах','Чувствуй растяжение бицепса бедра']},
+  'Болгарские выпады':         {yt:'2C-uNgKwPLE', wger:8,    tips:['Задняя нога на скамье','Корпус прямой','Переднее колено над ступнёй']},
+  'Ягодичный мост со штангой': {yt:'LM8XHLYJoYs', wger:null, tips:['Штанга на бёдрах','Сожми ягодицы вверху','Подбородок к груди']},
+  'Подъёмы на икры':           {yt:'-M4-G8p1fCI', wger:null, tips:['Полная амплитуда','Не пружинь','Медленное опускание']},
+  'Планка':                    {yt:'ASdvN_XEl_c', wger:null, tips:['Тело одна линия','Пресс напряжён','Не задирай таз']},
+  'Обратные скручивания':      {yt:'hyv14_KQgAg', wger:null, tips:['Поясница к полу','Поднимай таз','Медленно вниз']},
+  'Отжимания с рюкзаком':      {yt:'IODxDxX7oi4', wger:10,  tips:['Рюкзак с блинами','Техника та же','Прогрессия веса']},
+  'Тяга штанги (тяжёлая)':     {yt:'FWJR5Ve8bnQ', wger:63,  tips:['Тяжёлый вес 6-10 повт','Акцент на широчайшие','Полная амплитуда']},
+  'Жим с пола с паузой':       {yt:'jnAhfRTJCok', wger:1346,tips:['1 сек пауза на полу','Взрывное движение вверх','Контроль опускания']},
+  'Жим стоя (лёгкий)':         {yt:'2yjwXTZQDDI', wger:200, tips:['Лёгкий вес больше повт','Контроль движения','Акцент на дельты']},
+  'Пуловер':                   {yt:'FK4rHfX-wAE', wger:null, tips:['Прямые руки','Широкий хват','Грудь и широчайшие']},
+  'Сгибание рук EZ':           {yt:'av7-8igSXTs', wger:5,   tips:['Полный диапазон','Пик — сожми бицепс','Медленно вниз']},
+  'Трицепс над головой':       {yt:'_gsUck-7f74', wger:null, tips:['Локти вперёд','Полное разгибание','Медленно опускай']},
+  'Задняя дельта':             {yt:'EA7u4Q_8HQ0', wger:null, tips:['Наклон вперёд','Руки в стороны-назад','Сжимай лопатки']},
+  'Тяга классическая':         {yt:'op9kVnSso6Q', wger:241,  tips:['Гриф над серединой стопы','Нейтральная спина','Толкай пол от себя']},
+  'Зерчер-присед (средний)':   {yt:'7gkHDmCNPq8', wger:null,tips:['Средний вес','10-12 повт','Чистая техника']},
+  'Выпады назад':              {yt:'D7KaRcUTQeE', wger:8,   tips:['Шаг назад','Колено не касается пола','Толкайся передней ногой']},
+  'Good morning':              {yt:'YA-h3n9L4Ko', wger:null, tips:['Лёгкий вес!','Сгиб в бёдрах','Спина нейтральная']},
+  'Одноногий ягодичный мост':  {yt:'Ts9f0LkEBQo', wger:null, tips:['Одна нога на весу','Сожми ягодицу','Не скручивай таз']},
+  'Скручивания с блином':      {yt:'blNkUDWGJ4o', wger:null, tips:['Блин у груди','Не тяни за шею','Выдох при подъёме']},
+  'Боковая планка':            {yt:'K2eClOoQFzA', wger:null, tips:['Тело прямая линия','Таз не провисает','Дыши равномерно']},
 };
 
+// Simple index-based lookup - avoids escaping issues in onclick
+let _exModalName = '';
+let _exModalMuscles = [];
+
 function openExerciseDetail(exIdx, wday) {
-  // Get exercise data from WK for name, and PROGRAMS for muscles
   const wkEx = (WK[wday] || [])[exIdx];
   if (!wkEx) return;
-  const prog = PROGRAMS.find(p => p.day === wday);
-  const muscles = prog ? (prog.exercises[exIdx]?.muscles || []) : [];
-  const ex = { n: wkEx.n, muscles };
+  const prog = PROGRAMS.find(p => p.day === parseInt(wday));
+  _exModalName = wkEx.n;
+  _exModalMuscles = prog ? (prog.exercises[exIdx]?.muscles || []) : [];
   
   document.getElementById('ex-modal').classList.add('open');
+  renderExModal();
+}
+
+function renderExModal() {
+  const name = _exModalName;
+  const muscles = _exModalMuscles;
+  const ex = EX_DATA[name];
   const cont = document.getElementById('ex-modal-content');
-  const exData = EX_VIDEOS[ex.n];
 
-  if (!exData) {
-    cont.innerHTML = `
-      <div style="font-size:19px;font-weight:800;margin-bottom:10px">${ex.n}</div>
-      <div style="background:var(--bg3);border-radius:var(--r);padding:30px;text-align:center;color:var(--text3);font-size:13px">
-        Видео для этого упражнения не найдено
-      </div>`;
-    return;
-  }
-
-  const muscleChips = (muscles||[]).map(m =>
+  const chips = muscles.map(m =>
     `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--redbg);color:var(--red)">${m}</span>`
   ).join('');
 
-  const tips = (exData.tips||[]).map((t,i) =>
+  const tips = ex ? (ex.tips||[]).map((t,i) =>
     `<div style="display:flex;gap:10px;margin-bottom:8px">
-      <div style="width:22px;height:22px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${i+1}</div>
+      <div style="min-width:22px;height:22px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">${i+1}</div>
       <div style="font-size:13px;color:var(--text2);line-height:1.5;padding-top:2px">${t}</div>
     </div>`
-  ).join('');
+  ).join('') : '';
+
+  // wger image URL
+  const imgHtml = (ex && ex.wger) ?
+    `<img src="https://wger.de/en/exercise/${ex.wger}/view/base?format=json"
+       style="display:none" onerror="this.style.display='none'">
+     <div style="border-radius:var(--r);overflow:hidden;margin-bottom:16px;background:var(--bg3);min-height:180px;display:flex;align-items:center;justify-content:center" id="ex-img-wrap">
+       <img src="https://wger.de/en/exercise/image/${ex.wger}/view/"
+         style="width:100%;border-radius:var(--r);display:block"
+         onerror="document.getElementById('ex-img-wrap').innerHTML='<div style=\\'padding:30px;color:var(--text3);font-size:13px;text-align:center\\'>Картинка недоступна</div>'"
+         loading="lazy">
+     </div>` :
+    `<div style="border-radius:var(--r);background:var(--bg3);padding:40px;text-align:center;margin-bottom:16px">
+       <div style="font-size:48px;margin-bottom:8px">${getExerciseEmoji(muscles[0]||'chest')}</div>
+     </div>`;
+
+  const ytBtn = ex ?
+    `<a href="https://www.youtube.com/watch?v=${ex.yt}" target="_blank"
+       style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:10px;background:#FF0000;color:white;text-decoration:none;font-family:var(--f);font-size:14px;font-weight:700;margin-bottom:14px">
+       <svg width="20" height="14" viewBox="0 0 20 14" fill="white"><path d="M19.6 2.2A2.5 2.5 0 0 0 17.8.4C16.3 0 10 0 10 0S3.7 0 2.2.4A2.5 2.5 0 0 0 .4 2.2C0 3.7 0 7 0 7s0 3.3.4 4.8A2.5 2.5 0 0 0 2.2 13.6C3.7 14 10 14 10 14s6.3 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8C20 10.3 20 7 20 7s0-3.3-.4-4.8z"/><polygon points="8,10 13,7 8,4" fill="#FF0000"/></svg>
+       Смотреть на YouTube
+     </a>` : '';
 
   cont.innerHTML = `
-    <div style="font-size:19px;font-weight:800;letter-spacing:-.3px;margin-bottom:8px">${ex.n}</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${muscleChips}</div>
-    <div style="border-radius:var(--r);overflow:hidden;margin-bottom:16px;position:relative;padding-bottom:56.25%;height:0;background:#000">
-      <iframe
-        src="https://www.youtube.com/embed/${exData.yt}?autoplay=0&controls=1&modestbranding=1&rel=0"
-        style="position:absolute;top:0;left:0;width:100%;height:100%;border:none"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-        allowfullscreen>
-      </iframe>
-    </div>
+    <div style="font-size:19px;font-weight:800;letter-spacing:-.3px;margin-bottom:8px">${name}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${chips}</div>
+    ${imgHtml}
+    ${ytBtn}
     ${tips ? `<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Советы по технике</div>${tips}` : ''}
   `;
 }
 
-function showExerciseFallback(cont, exName, muscles) {
+function showExerciseFallback(cont, name, muscles) {
   cont.innerHTML = `
-    <div style="font-size:19px;font-weight:800;margin-bottom:10px">${exName}</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-      ${muscles.map(m => `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--redbg);color:var(--red)">${m}</span>`).join('')}
-    </div>
-    <div style="background:var(--bg3);border-radius:var(--r);padding:20px;text-align:center">
-      <div style="font-size:13px;color:var(--text3)">Видео недоступно</div>
-    </div>`;
+    <div style="font-size:19px;font-weight:800;margin-bottom:10px">${name}</div>
+    <div style="background:var(--bg3);border-radius:var(--r);padding:30px;text-align:center;color:var(--text3);font-size:13px">Видео недоступно</div>`;
 }
 
-
-async function openExerciseDetail(exName, muscles) {
-  document.getElementById('ex-modal').classList.add('open');
-  const cont = document.getElementById('ex-modal-content');
-  
-  // Show loading
-  cont.innerHTML = `
-    <div style="text-align:center;padding:32px 20px;color:var(--text3)">
-      <div style="font-size:32px;margin-bottom:10px;animation:spin 1s linear infinite;display:inline-block">⏳</div>
-      <div style="font-size:14px;font-weight:600">Загружаем гифку...</div>
-    </div>`;
-
-  const searchName = EX_SEARCH_MAP[exName] || exName.toLowerCase();
-  
-  // Check cache
-  if (exCache[exName]) {
-    showExerciseCard(cont, exName, muscles, exCache[exName]);
-    return;
-  }
-
-  try {
-    const r = await fetch(`https://physique-bot.vercel.app/api/exercise?name=${encodeURIComponent(searchName)}`);
-    const data = await r.json();
-    
-    if (data && data.length > 0) {
-      exCache[exName] = data[0];
-      showExerciseCard(cont, exName, muscles, data[0]);
-    } else {
-      showExerciseFallback(cont, exName, muscles);
-    }
-  } catch(e) {
-    showExerciseFallback(cont, exName, muscles);
-  }
-}
-
-function showExerciseCard(cont, exName, muscles, ex) {
-  const gifUrl = ex.gifUrl || '';
-  const bodyPart = ex.bodyPart || '';
-  const equipment = ex.equipment || '';
-  const instructions = ex.instructions || [];
-  const target = ex.target || '';
-  const secondary = ex.secondaryMuscles || [];
-
-  cont.innerHTML = `
-    <div style="margin-bottom:16px">
-      <div style="font-size:20px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px">${exName}</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-        ${bodyPart ? `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--redbg);color:var(--red)">${bodyPart}</span>` : ''}
-        ${target ? `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--bluebg);color:var(--blue)">${target}</span>` : ''}
-        ${equipment ? `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--bg3);color:var(--text3)">${equipment}</span>` : ''}
-      </div>
-      ${gifUrl ? `
-        <div style="border-radius:var(--r);overflow:hidden;background:var(--bg3);margin-bottom:16px;aspect-ratio:1;display:flex;align-items:center;justify-content:center">
-          <img src="${gifUrl}" alt="${exName}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r)" loading="lazy"/>
-        </div>` : ''}
-      ${secondary.length ? `
-        <div style="margin-bottom:14px">
-          <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Вторичные мышцы</div>
-          <div style="font-size:13px;color:var(--text2)">${secondary.join(', ')}</div>
-        </div>` : ''}
-      ${instructions.length ? `
-        <div>
-          <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Техника выполнения</div>
-          ${instructions.map((step, i) => `
-            <div style="display:flex;gap:10px;margin-bottom:10px">
-              <div style="width:24px;height:24px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${i+1}</div>
-              <div style="font-size:13px;color:var(--text2);line-height:1.5;padding-top:3px">${step}</div>
-            </div>`).join('')}
-        </div>` : ''}
-    </div>`;
-}
-
-function showExerciseFallback(cont, exName, muscles) {
-  // Show without GIF but with muscle info
-  cont.innerHTML = `
-    <div>
-      <div style="font-size:20px;font-weight:800;margin-bottom:10px">${exName}</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-        ${muscles.map(m => `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--redbg);color:var(--red)">${m}</span>`).join('')}
-      </div>
-      <div style="background:var(--bg3);border-radius:var(--r);padding:20px;text-align:center;margin-bottom:14px">
-        <div style="font-size:40px;margin-bottom:8px">${getExerciseEmoji(muscles[0]||'')}</div>
-        <div style="font-size:13px;color:var(--text3)">GIF недоступен<br>Добавь RAPIDAPI_KEY в Vercel</div>
-      </div>
-    </div>`;
-}
 
 // NAV
 const TABS=['dash','food','work','watr','prog'];
