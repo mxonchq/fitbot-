@@ -1086,7 +1086,7 @@ function renderActiveWorkout() {
 
     card.innerHTML = `
       <div style="padding:14px 14px 10px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="openExerciseDetail(this.dataset.name, JSON.parse(this.dataset.muscles))" data-name="${ex.name}" data-muscles="${JSON.stringify(ex.muscles).replace(/"/g, '&quot;')}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="openExerciseDetail(${exIdx}, ${JSON.stringify(vwday)})">
           <div style="width:38px;height:38px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px">${getExerciseEmoji(ex.muscles[0])}</div>
           <div style="flex:1">
             <div style="font-size:14px;font-weight:800">${ex.name} <span style="font-size:10px;color:var(--red);font-weight:700">▶ гифка</span></div>
@@ -1275,8 +1275,8 @@ const EX_VIDEOS = {
   'Подъёмы на икры':              {yt:'-M4-G8p1fCI', tips:['Полная амплитуда вверх и вниз','Не пружинь','Медленное опускание']},
   'Планка':                       {yt:'ASdvN_XEl_c', tips:['Тело одна прямая линия','Пресс и ягодицы напряжены','Не задирай таз']},
   'Обратные скручивания':         {yt:'hyv14_KQgAg', tips:['Поясница прижата к полу','Поднимай таз вверх','Медленно опускай ноги']},
-  'Отжимания с рюкзаком':         {yt:'IODxDxX7oi4', tips:['Рюкзак с блинами для веса','Техника как обычные отжимания','Больше подходов с прогрессией']},
-  'Тяга штанги (тяжёлая)':        {yt:'FWJR5Ve8bnQ', tips:['Работаем с тяжёлым весом','6-10 повторений','Акцент на широчайшие']},
+  'Отжимания с рюкзаком':         {yt:'IODxDxX7oi4', tips:['Рюкзак с блинами для веса','Техника как обычные отжимания','Прогрессия веса']},
+  'Тяга штанги (тяжёлая)':        {yt:'FWJR5Ve8bnQ', tips:['Тяжёлый вес 6-10 повторений','Акцент на широчайшие','Полная амплитуда']},
   'Жим с пола с паузой':          {yt:'jnAhfRTJCok', tips:['1 секунда паузы на полу','Взрывное движение вверх','Контролируй опускание']},
   'Жим стоя (лёгкий)':            {yt:'2yjwXTZQDDI', tips:['Лёгкий вес — больше повторов','Контроль движения','Акцент на дельты']},
   'Пуловер':                      {yt:'FK4rHfX-wAE', tips:['Широкий хват','Прямые руки','Чувствуй грудь и широчайшие']},
@@ -1285,32 +1285,41 @@ const EX_VIDEOS = {
   'Задняя дельта':                {yt:'EA7u4Q_8HQ0', tips:['Лёгкий наклон вперёд','Руки в стороны-назад','Сжимай лопатки']},
   'Тяга классическая':            {yt:'op9kVnSso6Q', tips:['Гриф над серединой стопы','Нейтральная спина','Толкай пол от себя']},
   'Зерчер-присед (средний)':      {yt:'7gkHDmCNPq8', tips:['Средний вес — чистая техника','10-12 повторений','Контроль движения']},
-  'Выпады назад':                 {yt:'D7KaRcUTQeE', tips:['Шаг назад — не вперёд','Колено не касается пола','Отталкивайся передней ногой']},
+  'Выпады назад':                 {yt:'D7KaRcUTQeE', tips:['Шаг назад','Колено не касается пола','Отталкивайся передней ногой']},
   'Good morning':                 {yt:'YA-h3n9L4Ko', tips:['Лёгкий вес!','Сгиб в бёдрах','Спина нейтральная']},
   'Одноногий ягодичный мост':     {yt:'Ts9f0LkEBQo', tips:['Одна нога на весу','Сожми ягодицу вверху','Не скручивайся в тазу']},
-  'Скручивания с блином':         {yt:'blNkUDWGJ4o', tips:['Блин у груди или за головой','Не тяни за шею','Выдох при подъёме']},
+  'Скручивания с блином':         {yt:'blNkUDWGJ4o', tips:['Блин у груди','Не тяни за шею','Выдох при подъёме']},
   'Боковая планка':               {yt:'K2eClOoQFzA', tips:['Тело прямая линия','Таз не провисает','Дыши равномерно']},
+  'Дорожка — ходьба/бег':         {yt:'_kGeLutilized', tips:['Темп 5-6 км/ч','Можно говорить — нельзя петь','35-45 минут']},
+  'Дорожка или прогулка':         {yt:'VHrdHkqNoUY', tips:['40-60 минут','Умеренный темп','Считай шаги']},
 };
 
-
-async function openExerciseDetail(exName, muscles) {
+function openExerciseDetail(exIdx, wday) {
+  // Get exercise data from WK for name, and PROGRAMS for muscles
+  const wkEx = (WK[wday] || [])[exIdx];
+  if (!wkEx) return;
+  const prog = PROGRAMS.find(p => p.day === wday);
+  const muscles = prog ? (prog.exercises[exIdx]?.muscles || []) : [];
+  const ex = { n: wkEx.n, muscles };
+  
   document.getElementById('ex-modal').classList.add('open');
   const cont = document.getElementById('ex-modal-content');
-  const exData = EX_VIDEOS[exName];
-  
+  const exData = EX_VIDEOS[ex.n];
+
   if (!exData) {
-    showExerciseFallback(cont, exName, muscles);
+    cont.innerHTML = `
+      <div style="font-size:19px;font-weight:800;margin-bottom:10px">${ex.n}</div>
+      <div style="background:var(--bg3);border-radius:var(--r);padding:30px;text-align:center;color:var(--text3);font-size:13px">
+        Видео для этого упражнения не найдено
+      </div>`;
     return;
   }
-  showExerciseYT(cont, exName, muscles, exData);
-}
 
-function showExerciseYT(cont, exName, muscles, exData) {
-  const muscleChips = muscles.map(m =>
+  const muscleChips = (muscles||[]).map(m =>
     `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--redbg);color:var(--red)">${m}</span>`
   ).join('');
 
-  const tips = (exData.tips || []).map((t, i) =>
+  const tips = (exData.tips||[]).map((t,i) =>
     `<div style="display:flex;gap:10px;margin-bottom:8px">
       <div style="width:22px;height:22px;border-radius:50%;background:var(--red);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0">${i+1}</div>
       <div style="font-size:13px;color:var(--text2);line-height:1.5;padding-top:2px">${t}</div>
@@ -1318,20 +1327,17 @@ function showExerciseYT(cont, exName, muscles, exData) {
   ).join('');
 
   cont.innerHTML = `
-    <div style="font-size:19px;font-weight:800;letter-spacing:-.3px;margin-bottom:8px">${exName}</div>
+    <div style="font-size:19px;font-weight:800;letter-spacing:-.3px;margin-bottom:8px">${ex.n}</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${muscleChips}</div>
-    <div style="border-radius:var(--r);overflow:hidden;margin-bottom:16px;aspect-ratio:16/9;background:#000">
+    <div style="border-radius:var(--r);overflow:hidden;margin-bottom:16px;position:relative;padding-bottom:56.25%;height:0;background:#000">
       <iframe
-        src="https://www.youtube.com/embed/${exData.yt}?autoplay=1&mute=1&loop=1&playlist=${exData.yt}&controls=1&modestbranding=1&rel=0"
-        style="width:100%;height:100%;border:none"
-        allow="autoplay; encrypted-media"
-        allowfullscreen
-        loading="lazy">
+        src="https://www.youtube.com/embed/${exData.yt}?autoplay=0&controls=1&modestbranding=1&rel=0"
+        style="position:absolute;top:0;left:0;width:100%;height:100%;border:none"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+        allowfullscreen>
       </iframe>
     </div>
-    ${tips ? `
-    <div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Советы по технике</div>
-    ${tips}` : ''}
+    ${tips ? `<div style="font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Советы по технике</div>${tips}` : ''}
   `;
 }
 
