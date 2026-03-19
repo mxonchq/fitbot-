@@ -258,9 +258,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
   .wgrid{grid-template-columns:repeat(6,1fr)}
 }
 </style>
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="./rbh-umd.js"></script>
+<script src="./muscle-map.js"></script>
 </head>
 <body>
 
@@ -405,9 +403,15 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
     <!-- Muscle map summary -->
     <div class="card cp" style="margin-bottom:14px">
       <div style="font-size:10px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Задействованные мышцы</div>
-      <div style="display:flex;justify-content:center;gap:16px">
-        <div id="sum-front" style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СПЕРЕДИ</div></div>
-        <div id="sum-back" style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СЗАДИ</div></div>
+      <div style="display:flex;justify-content:center;gap:16px;align-items:flex-start">
+        <div style="text-align:center">
+          <div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СПЕРЕДИ</div>
+          <div id="sum-front" style="width:110px;height:220px"></div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px;letter-spacing:1px">СЗАДИ</div>
+          <div id="sum-back" style="width:110px;height:220px"></div>
+        </div>
       </div>
     </div>
     <!-- Exercise summary -->
@@ -1187,10 +1191,10 @@ function backToPrograms() {
 
 // ── MUSCLE MAP RENDERER ──────────────────────────────────
 function renderMuscleMapInEl(frontId, backId, muscles) {
-  if (typeof ReactBodyHighlighter === 'undefined') { console.warn('RBH not loaded'); return; }
-  const RBH = ReactBodyHighlighter;
-  const Model = RBH.default || RBH;
-  if (typeof Model !== 'function') { console.warn('Model not a function', typeof Model, Object.keys(RBH)); return; }
+  renderBodyMap(frontId, backId, muscles);
+  return;
+  // old React code below (disabled)
+  if (false) {
   const freq = {};
   muscles.forEach(m => { freq[m] = (freq[m]||0)+1; });
   const data = Object.entries(freq).map(([muscle,frequency]) => ({name:muscle,muscles:[muscle],frequency}));
