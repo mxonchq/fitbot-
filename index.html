@@ -260,7 +260,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--f);height:100
 </style>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/react-body-highlighter@2.0.5/dist/index.umd.js"></script>
+<script src="./rbh-umd.js"></script>
 </head>
 <body>
 
@@ -1187,8 +1187,10 @@ function backToPrograms() {
 
 // ── MUSCLE MAP RENDERER ──────────────────────────────────
 function renderMuscleMapInEl(frontId, backId, muscles) {
-  if (typeof ReactBodyHighlighter === 'undefined') return;
-  const Model = ReactBodyHighlighter.default || ReactBodyHighlighter;
+  if (typeof ReactBodyHighlighter === 'undefined') { console.warn('RBH not loaded'); return; }
+  const RBH = ReactBodyHighlighter;
+  const Model = RBH.default || RBH;
+  if (typeof Model !== 'function') { console.warn('Model not a function', typeof Model, Object.keys(RBH)); return; }
   const freq = {};
   muscles.forEach(m => { freq[m] = (freq[m]||0)+1; });
   const data = Object.entries(freq).map(([muscle,frequency]) => ({name:muscle,muscles:[muscle],frequency}));
